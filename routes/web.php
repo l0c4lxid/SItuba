@@ -53,6 +53,19 @@ Route::middleware('auth')->group(function () {
 
         return back()->with('status', 'Status pengguna berhasil diperbarui.');
     })->name('pemda.verification.status');
+
+    Route::post('/pemda/verifikasi/bulk/status', function (Request $request) {
+        abort_if(auth()->user()->role !== UserRole::Pemda, 403);
+
+        $validated = $request->validate([
+            'status' => ['required', 'in:active,inactive'],
+        ]);
+
+        User::where('role', '!=', UserRole::Pemda->value)
+            ->update(['is_active' => $validated['status'] === 'active']);
+
+        return back()->with('status', 'Semua status pengguna berhasil diperbarui.');
+    })->name('pemda.verification.bulk-status');
 });
 
 require __DIR__.'/auth.php';

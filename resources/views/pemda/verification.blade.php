@@ -4,21 +4,35 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header flex-wrap gap-3 d-flex justify-content-between align-items-center">
-                    <div class="flex-grow-1">
-                        <h5 class="mb-0">Verifikasi Pengguna SIGAP TBC</h5>
-                        <p class="text-sm text-muted mb-0">Kelola status aktif pengguna sesuai kebutuhan wilayah.</p>
-                    </div>
-                    <form method="GET" action="{{ route('pemda.verification') }}" class="d-flex gap-2">
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fa fa-search"></i></span>
-                            <input type="text" name="q" class="form-control" placeholder="Cari nama / nomor HP / instansi"
-                                value="{{ $search ?? '' }}">
+                <div class="card-header">
+                    <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">Verifikasi Pengguna SIGAP TBC</h5>
+                            <p class="text-sm text-muted mb-0">Kelola status aktif pengguna sesuai kebutuhan wilayah.</p>
                         </div>
-                        <button type="submit" class="btn btn-outline-primary">Cari</button>
-                    </form>
+                        <div class="d-flex flex-wrap gap-2">
+                            <form method="GET" action="{{ route('pemda.verification') }}" class="d-flex gap-2">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
+                                    <input type="text" name="q" class="form-control" placeholder="Cari nama / nomor HP / instansi" value="{{ $search ?? '' }}">
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Cari</button>
+                            </form>
+                            <form method="POST" action="{{ route('pemda.verification.bulk-status') }}" class="d-flex align-items-center gap-2">
+                                @csrf
+                                <select name="status" class="form-select form-select-sm">
+                                    <option value="active">Aktifkan Semua</option>
+                                    <option value="inactive">Nonaktifkan Semua</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-dark">Terapkan</button>
+                            </form>
+                        </div>
+                    </div>
                     @if (session('status'))
-                        <span class="badge bg-gradient-success">{{ session('status') }}</span>
+                        <div class="alert alert-success alert-dismissible fade show py-2 px-3 mt-3 mb-0" role="alert">
+                            <i class="fa fa-check-circle me-2"></i>{{ session('status') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
                     @endif
                 </div>
                 <div class="card-body">
@@ -69,20 +83,17 @@
                                                 {{ $user->is_active ? 'Aktif' : 'Tidak Aktif' }}
                                             </span>
                                         </td>
-                                        <td class="align-middle text-end text-nowrap">
-                                            <form method="POST" action="{{ route('pemda.verification.status', $user) }}" class="d-inline">
+                                        <td class="align-middle text-center">
+                                            <form method="POST" action="{{ route('pemda.verification.status', $user) }}" class="d-inline-block">
                                                 @csrf
-                                                <input type="hidden" name="status" value="active">
-                                                <button class="btn btn-sm btn-success me-2" type="submit" {{ $user->is_active ? 'disabled' : '' }}>
-                                                    Aktifkan
-                                                </button>
-                                            </form>
-                                            <form method="POST" action="{{ route('pemda.verification.status', $user) }}" class="d-inline">
-                                                @csrf
-                                                <input type="hidden" name="status" value="inactive">
-                                                <button class="btn btn-sm btn-outline-danger" type="submit" {{ ! $user->is_active ? 'disabled' : '' }}>
-                                                    Nonaktifkan
-                                                </button>
+                                                <input type="hidden" name="status" value="{{ $user->is_active ? 'inactive' : 'active' }}">
+                                                <div class="d-inline-flex align-items-center bg-light rounded-pill px-3 py-1 gap-2">
+                                                    <span class="text-xs text-muted {{ $user->is_active ? '' : 'fw-bold text-danger' }}">Nonaktif</span>
+                                                    <div class="form-check form-switch m-0">
+                                                        <input class="form-check-input" type="checkbox" onchange="this.form.submit()" {{ $user->is_active ? 'checked' : '' }}>
+                                                    </div>
+                                                    <span class="text-xs text-muted {{ $user->is_active ? 'fw-bold text-success' : '' }}">Aktif</span>
+                                                </div>
                                             </form>
                                         </td>
                                     </tr>
