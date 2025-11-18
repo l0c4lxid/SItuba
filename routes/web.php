@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Models\User;
 use App\Models\UserDetail;
 use App\Models\PatientScreening;
+use App\Models\FamilyMember;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -288,6 +289,42 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('puskesmas.patients');
 
+    Route::get('/puskesmas/pasien/{patient}/anggota', function (Request $request, User $patient) {
+        abort_if($request->user()->role !== UserRole::Puskesmas, 403);
+        abort_if($patient->role !== UserRole::Pasien, 404);
+
+        $patient->loadMissing(['detail.supervisor.detail', 'familyMembers']);
+
+        $kader = optional($patient->detail)->supervisor;
+        abort_if(! $kader, 404);
+        abort_if(optional($kader->detail)->supervisor_id !== $request->user()->id, 403);
+
+        return view('puskesmas.patient-family', [
+            'patient' => $patient,
+            'familyMembers' => $patient->familyMembers()->latest()->get(),
+        ]);
+    })->name('puskesmas.patient.family');
+
+    Route::post('/puskesmas/pasien/{patient}/anggota/{member}', function (Request $request, User $patient, \App\Models\FamilyMember $member) {
+        abort_if($request->user()->role !== UserRole::Puskesmas, 403);
+        abort_if($patient->role !== UserRole::Pasien, 404);
+        abort_if($member->patient_id !== $patient->id, 404);
+
+        $patient->loadMissing(['detail.supervisor.detail']);
+        $kader = optional($patient->detail)->supervisor;
+        abort_if(! $kader, 404);
+        abort_if(optional($kader->detail)->supervisor_id !== $request->user()->id, 403);
+
+        $validated = $request->validate([
+            'screening_status' => ['required', 'in:pending,in_progress,suspect,clear'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $member->update($validated);
+
+        return back()->with('status', 'Status anggota keluarga diperbarui.');
+    })->name('puskesmas.patient.family.update');
+
     Route::get('/puskesmas/skrining', function (Request $request) {
         abort_if($request->user()->role !== UserRole::Puskesmas, 403);
 
@@ -325,6 +362,82 @@ Route::middleware('auth')->group(function () {
             'search' => $request->input('q', ''),
         ]);
     })->name('puskesmas.screenings');
+
+    Route::get('/puskesmas/berobat', function (Request $request) {
+        abort_if($request->user()->role !== UserRole::Puskesmas, 403);
+
+        $kaderIds = User::query()
+            ->where('role', UserRole::Kader->value)
+            ->whereHas('detail', fn ($detail) => $detail->where('supervisor_id', $request->user()->id))
+            ->pluck('id');
+
+        $statuses = [
+            'contacted' => 'Perlu Konfirmasi',
+            'scheduled' => 'Terjadwal',
+            'in_treatment' => 'Sedang Berobat',
+            'recovered' => 'Selesai',
+        ];
+
+        $statusParam = $request->input('status');
+
+        if ($kaderIds->isEmpty()) {
+            $counts = collect(array_fill_keys(array_keys($statuses), 0));
+            $patients = collect();
+        } else {
+            $baseQuery = User::query()
+                ->with([
+                    'detail',
+                    'detail.supervisor',
+                    'screenings' => fn ($query) => $query->latest()->limit(1),
+                ])
+                ->where('role', UserRole::Pasien->value)
+                ->whereHas('detail', function ($detail) use ($kaderIds) {
+                    $detail->whereIn('supervisor_id', $kaderIds)
+                        ->where('treatment_status', '!=', 'none');
+                });
+
+            $counts = collect();
+            foreach (array_keys($statuses) as $status) {
+                $counts[$status] = (clone $baseQuery)->whereHas('detail', fn ($detail) => $detail->where('treatment_status', $status))->count();
+            }
+
+            $patients = $baseQuery
+                ->when($statusParam && array_key_exists($statusParam, $statuses), function ($query) use ($statusParam) {
+                    $query->whereHas('detail', fn ($detail) => $detail->where('treatment_status', $statusParam));
+                })
+                ->latest()
+                ->get();
+        }
+
+        return view('puskesmas.treatment', [
+            'patients' => $patients,
+            'statuses' => $statuses,
+            'counts' => $counts,
+            'activeStatus' => $statusParam,
+        ]);
+    })->name('puskesmas.treatment');
+
+    Route::post('/puskesmas/berobat/{patient}', function (Request $request, User $patient) {
+        abort_if($request->user()->role !== UserRole::Puskesmas, 403);
+        abort_if($patient->role !== UserRole::Pasien, 404);
+
+        $patient->loadMissing('detail');
+        abort_if(! $patient->detail, 422);
+
+        $validated = $request->validate([
+            'status' => ['required', 'in:contacted,scheduled,in_treatment,recovered'],
+            'next_follow_up_at' => ['nullable', 'date'],
+            'treatment_notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $patient->detail->update([
+            'treatment_status' => $validated['status'],
+            'next_follow_up_at' => $validated['next_follow_up_at'] ?? null,
+            'treatment_notes' => $validated['treatment_notes'] ?? null,
+        ]);
+
+        return back()->with('status', 'Status pengobatan pasien diperbarui.');
+    })->name('puskesmas.treatment.update');
 
     Route::get('/puskesmas/kader', function (Request $request) {
         abort_if($request->user()->role !== UserRole::Puskesmas, 403);
@@ -454,6 +567,41 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('kader.patients');
 
+    Route::get('/kader/skrining', function (Request $request) {
+        abort_if(auth()->user()->role !== UserRole::Kader, 403);
+
+        $patientsQuery = User::query()
+            ->with(['detail', 'screenings' => fn ($query) => $query->latest()->limit(1)])
+            ->where('role', UserRole::Pasien->value)
+            ->whereRelation('detail', 'supervisor_id', $request->user()->id)
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $term = '%'.$request->input('q').'%';
+                $query->where(function ($sub) use ($term) {
+                    $sub->where('name', 'like', $term)
+                        ->orWhere('phone', 'like', $term)
+                        ->orWhereHas('detail', function ($detail) use ($term) {
+                            $detail->where('address', 'like', $term)
+                                ->orWhere('nik', 'like', $term);
+                        });
+                });
+            });
+
+        $status = $request->input('status');
+        if ($status === 'belum') {
+            $patientsQuery->doesntHave('screenings');
+        } elseif ($status === 'sudah') {
+            $patientsQuery->has('screenings');
+        }
+
+        $patients = $patientsQuery->latest()->get();
+
+        return view('kader.screening-index', [
+            'patients' => $patients,
+            'search' => $request->input('q', ''),
+            'status' => $status,
+        ]);
+    })->name('kader.screening.index');
+
     Route::get('/kader/pasien/create', function (Request $request) {
         abort_if(auth()->user()->role !== UserRole::Kader, 403);
 
@@ -501,7 +649,7 @@ Route::middleware('auth')->group(function () {
         abort_if($request->user()->role !== UserRole::Kader, 403);
         abort_if($patient->role !== UserRole::Pasien, 404);
 
-        $patient->loadMissing('detail');
+        $patient->loadMissing(['detail', 'familyMembers']);
         abort_if(optional($patient->detail)->supervisor_id !== $request->user()->id, 404);
 
         return view('kader.patients-show', [
@@ -509,12 +657,35 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('kader.patients.show');
 
+    Route::post('/kader/pasien/{patient}/family', function (Request $request, User $patient) {
+        abort_if($request->user()->role !== UserRole::Kader, 403);
+        abort_if($patient->role !== UserRole::Pasien, 404);
+
+        $patient->loadMissing('detail');
+        abort_if(optional($patient->detail)->supervisor_id !== $request->user()->id, 404);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'relation' => ['nullable', 'string', 'max:100'],
+            'phone' => ['nullable', 'string', 'max:25'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $patient->familyMembers()->create($validated);
+
+        return back()->with('status', 'Anggota keluarga risiko berhasil ditambahkan.');
+    })->name('kader.patients.family.store');
+
     Route::get('/kader/pasien/{patient}/screening', function (Request $request, User $patient) {
         abort_if($request->user()->role !== UserRole::Kader, 403);
         abort_if($patient->role !== UserRole::Pasien, 404);
 
         $patient->loadMissing('detail');
         abort_if(optional($patient->detail)->supervisor_id !== $request->user()->id, 404);
+
+        if ($patient->screenings()->exists()) {
+            return redirect()->route('kader.screening.index')->with('status', 'Pasien ini sudah pernah dilakukan skrining.');
+        }
 
         $questions = [
             'batuk_kronis' => 'Apakah pasien batuk lebih dari 2 minggu?',
@@ -535,6 +706,10 @@ Route::middleware('auth')->group(function () {
 
         $patient->loadMissing('detail');
         abort_if(optional($patient->detail)->supervisor_id !== $request->user()->id, 404);
+
+        if ($patient->screenings()->exists()) {
+            return redirect()->route('kader.screening.index')->with('status', 'Pasien ini sudah pernah dilakukan skrining.');
+        }
 
         $questions = [
             'batuk_kronis' => 'Apakah pasien batuk lebih dari 2 minggu?',
@@ -558,6 +733,11 @@ Route::middleware('auth')->group(function () {
             'answers' => $validated,
             'notes' => null,
         ]);
+
+        $positiveCount = collect($validated)->filter(fn ($answer) => $answer === 'ya')->count();
+        if ($positiveCount >= 2 && $patient->detail) {
+            $patient->detail->update(['treatment_status' => 'contacted']);
+        }
 
         return redirect()->route('kader.patients')->with('status', 'Skrining pasien telah dicatat.');
     })->name('kader.patients.screening.store');
@@ -585,9 +765,7 @@ Route::middleware('auth')->group(function () {
 
         $user = $request->user()->loadMissing('detail');
 
-        if ($user->screenings()->exists()) {
-            return redirect()->route('patient.screening')->with('status', 'Anda sudah melakukan skrining mandiri.');
-        }
+        abort_if($user->screenings()->exists(), 403, 'Anda sudah melakukan skrining mandiri.');
 
         $kaderId = optional($user->detail)->supervisor_id;
         abort_if(empty($kaderId), 422, 'Data kader pendamping belum tersedia.');
@@ -613,6 +791,11 @@ Route::middleware('auth')->group(function () {
             'notes' => null,
         ]);
 
+        $positiveCount = collect($validated)->filter(fn ($answer) => $answer === 'ya')->count();
+        if ($positiveCount >= 2 && $user->detail) {
+            $user->detail->update(['treatment_status' => 'contacted']);
+        }
+
         return redirect()->route('patient.screening')->with('status', 'Terima kasih, skrining mandiri berhasil dikirim.');
     })->name('patient.screening.store');
 
@@ -632,6 +815,79 @@ Route::middleware('auth')->group(function () {
 
         return back()->with('status', 'Status akun pasien diperbarui.');
     })->name('kader.patients.status');
+
+    Route::get('/pasien/anggota', function (Request $request) {
+        abort_if($request->user()->role !== UserRole::Pasien, 403);
+
+        $patient = $request->user()->loadMissing('familyMembers');
+
+        return view('patient.family-members', [
+            'patient' => $patient,
+            'familyMembers' => $patient->familyMembers()->latest()->get(),
+        ]);
+    })->name('patient.family');
+
+    Route::post('/pasien/anggota', function (Request $request) {
+        abort_if($request->user()->role !== UserRole::Pasien, 403);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'relation' => ['nullable', 'string', 'max:100'],
+            'phone' => ['nullable', 'string', 'max:25'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $request->user()->familyMembers()->create($validated);
+
+        return back()->with('status', 'Anggota keluarga berhasil ditambahkan.');
+    })->name('patient.family.store');
+
+    Route::get('/pasien/anggota/{member}/skrining', function (Request $request, FamilyMember $member) {
+        abort_if($request->user()->role !== UserRole::Pasien, 403);
+        abort_if($member->patient_id !== $request->user()->id, 404);
+
+        $questions = [
+            'batuk_kronis' => 'Apakah anggota batuk lebih dari 2 minggu?',
+            'dahak_darah' => 'Apakah batuk mengeluarkan dahak berdarah?',
+            'berat_badan' => 'Apakah berat badan turun tanpa sebab jelas?',
+            'demam_malam' => 'Apakah sering demam/keringat malam?',
+        ];
+
+        return view('patient.family-screening', [
+            'member' => $member,
+            'questions' => $questions,
+        ]);
+    })->name('patient.family.screening');
+
+    Route::post('/pasien/anggota/{member}/skrining', function (Request $request, FamilyMember $member) {
+        abort_if($request->user()->role !== UserRole::Pasien, 403);
+        abort_if($member->patient_id !== $request->user()->id, 404);
+
+        $questions = [
+            'batuk_kronis',
+            'dahak_darah',
+            'berat_badan',
+            'demam_malam',
+        ];
+
+        $rules = [];
+        foreach ($questions as $key) {
+            $rules[$key] = ['required', 'in:ya,tidak'];
+        }
+
+        $validated = $request->validate($rules);
+
+        $positive = collect($validated)->filter(fn ($answer) => $answer === 'ya')->count();
+        $status = $positive >= 2 ? 'suspect' : ($positive === 1 ? 'in_progress' : 'clear');
+
+        $member->update([
+            'screening_status' => $status,
+            'last_screening_answers' => $validated,
+            'last_screened_at' => now(),
+        ]);
+
+        return redirect()->route('patient.family')->with('status', 'Hasil skrining anggota disimpan.');
+    })->name('patient.family.screening.store');
 });
 
 require __DIR__.'/auth.php';

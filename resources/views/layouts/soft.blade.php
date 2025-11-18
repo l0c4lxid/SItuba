@@ -7,14 +7,14 @@
         UserRole::Pasien->value => [
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
             ['label' => 'Skrining', 'url' => route('patient.screening'), 'icon' => 'screening'],
-            ['label' => 'Anggota Keluarga', 'url' => '#', 'icon' => 'anggota'],
+            ['label' => 'Anggota Keluarga', 'url' => route('patient.family'), 'icon' => 'anggota'],
         ],
         UserRole::Puskesmas->value => [
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
             ['label' => 'Data Kader', 'url' => route('puskesmas.kaders'), 'icon' => 'users'],
             ['label' => 'Data Pasien', 'url' => route('puskesmas.patients'), 'icon' => 'folder'],
             ['label' => 'Skrining', 'url' => route('puskesmas.screenings'), 'icon' => 'screening'],
-            ['label' => 'Berobat', 'url' => '#', 'icon' => 'berobat'],
+            ['label' => 'Berobat', 'url' => route('puskesmas.treatment'), 'icon' => 'berobat'],
             ['label' => 'Sembuh', 'url' => '#', 'icon' => 'sembuh'],
         ],
         UserRole::Kelurahan->value => [
@@ -33,7 +33,7 @@
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
             ['label' => 'Puskesmas Induk', 'url' => route('kader.puskesmas'), 'icon' => 'folder'],
             ['label' => 'Data Pasien', 'url' => route('kader.patients'), 'icon' => 'folder'],
-            ['label' => 'Skrining', 'url' => '#', 'icon' => 'screening'],
+            ['label' => 'Skrining', 'url' => route('kader.screening.index'), 'icon' => 'screening'],
             ['label' => 'Berobat', 'url' => '#', 'icon' => 'berobat'],
         ],
     ];
