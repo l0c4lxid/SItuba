@@ -29,7 +29,7 @@
         ],
         UserRole::Kader->value => [
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
-            ['label' => 'Data Pasien', 'url' => '#', 'icon' => 'folder'],
+            ['label' => 'Data Pasien', 'url' => route('kader.patients'), 'icon' => 'folder'],
             ['label' => 'Skrining', 'url' => '#', 'icon' => 'screening'],
             ['label' => 'Berobat', 'url' => '#', 'icon' => 'berobat'],
         ],
