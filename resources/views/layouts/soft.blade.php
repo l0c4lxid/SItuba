@@ -13,7 +13,7 @@
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
             ['label' => 'Data Kader', 'url' => route('puskesmas.kaders'), 'icon' => 'users'],
             ['label' => 'Data Pasien', 'url' => route('puskesmas.patients'), 'icon' => 'folder'],
-            ['label' => 'Skrining', 'url' => '#', 'icon' => 'screening'],
+            ['label' => 'Skrining', 'url' => route('puskesmas.screenings'), 'icon' => 'screening'],
             ['label' => 'Berobat', 'url' => '#', 'icon' => 'berobat'],
             ['label' => 'Sembuh', 'url' => '#', 'icon' => 'sembuh'],
         ],

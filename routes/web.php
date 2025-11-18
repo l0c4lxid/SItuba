@@ -288,6 +288,44 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('puskesmas.patients');
 
+    Route::get('/puskesmas/skrining', function (Request $request) {
+        abort_if($request->user()->role !== UserRole::Puskesmas, 403);
+
+        $kaderIds = User::query()
+            ->where('role', UserRole::Kader->value)
+            ->whereHas('detail', fn ($detail) => $detail->where('supervisor_id', $request->user()->id))
+            ->pluck('id');
+
+        $patients = $kaderIds->isEmpty()
+            ? collect()
+            : User::query()
+                ->with([
+                    'detail',
+                    'detail.supervisor',
+                    'screenings' => fn ($query) => $query->latest()->limit(1),
+                ])
+                ->where('role', UserRole::Pasien->value)
+                ->whereHas('detail', fn ($detail) => $detail->whereIn('supervisor_id', $kaderIds))
+                ->when($request->filled('q'), function ($query) use ($request) {
+                    $term = '%'.$request->input('q').'%';
+                    $query->where(function ($sub) use ($term) {
+                        $sub->where('name', 'like', $term)
+                            ->orWhere('phone', 'like', $term)
+                            ->orWhereHas('detail', function ($detail) use ($term) {
+                                $detail->where('address', 'like', $term)
+                                    ->orWhere('nik', 'like', $term);
+                            });
+                    });
+                })
+                ->latest()
+                ->get();
+
+        return view('puskesmas.screenings', [
+            'patients' => $patients,
+            'search' => $request->input('q', ''),
+        ]);
+    })->name('puskesmas.screenings');
+
     Route::get('/puskesmas/kader', function (Request $request) {
         abort_if($request->user()->role !== UserRole::Puskesmas, 403);
 
