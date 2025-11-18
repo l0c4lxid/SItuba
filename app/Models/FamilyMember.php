@@ -22,6 +22,13 @@ class FamilyMember extends Model
         'phone',
         'screening_status',
         'notes',
+        'last_screening_answers',
+        'last_screened_at',
+    ];
+
+    protected $casts = [
+        'last_screening_answers' => 'array',
+        'last_screened_at' => 'datetime',
     ];
 
     public function patient(): BelongsTo

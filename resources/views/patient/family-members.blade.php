@@ -46,6 +46,7 @@
                                     <th>Nama</th>
                                     <th>Relasi</th>
                                     <th>Status</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -68,14 +69,22 @@
                                             <span class="badge {{ $badges[$member->screening_status] ?? 'bg-secondary' }}">
                                                 {{ ucfirst(str_replace('_', ' ', $member->screening_status)) }}
                                             </span>
+                                            @if ($member->last_screened_at)
+                                                <p class="text-xs text-muted mb-0">Terakhir: {{ $member->last_screened_at->format('d M Y H:i') }}</p>
+                                            @endif
                                             @if ($member->notes)
                                                 <p class="text-xs text-muted mb-0">{{ $member->notes }}</p>
                                             @endif
                                         </td>
+                                        <td>
+                                            <a href="{{ route('patient.family.screening', $member) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fa-solid fa-notes-medical me-1"></i> Skrining
+                                            </a>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="text-center text-muted">Belum ada anggota keluarga.</td>
+                                        <td colspan="4" class="text-center text-muted">Belum ada anggota keluarga.</td>
                                     </tr>
                                 @endforelse
                             </tbody>

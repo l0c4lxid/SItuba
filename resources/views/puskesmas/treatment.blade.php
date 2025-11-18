@@ -9,6 +9,16 @@
                         <h5 class="mb-0">Pengelolaan Pengobatan Pasien</h5>
                         <p class="text-sm text-muted mb-0">Pantau progres pasien yang sedang ditindaklanjuti pengobatan TBC.</p>
                     </div>
+                    <ul class="nav nav-pills">
+                        @foreach ($statuses as $value => $label)
+                            <li class="nav-item">
+                                <a class="nav-link {{ $activeStatus === $value ? 'active' : '' }}" href="{{ route('puskesmas.treatment', ['status' => $value]) }}">
+                                    {{ $label }}
+                                    <span class="badge bg-white text-dark ms-1">{{ $counts[$value] ?? 0 }}</span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -17,6 +27,7 @@
                                 <tr>
                                     <th>Pasien</th>
                                     <th>Kader Penghubung</th>
+                                    <th>Hasil Skrining Terakhir</th>
                                     <th>Status Pengobatan</th>
                                     <th>Jadwal Kontrol</th>
                                     <th>Aksi</th>
@@ -24,6 +35,10 @@
                             </thead>
                             <tbody>
                                 @forelse ($patients as $patient)
+                                    @php
+                                        $latestScreening = $patient->screenings->first();
+                                        $positiveCount = collect($latestScreening->answers ?? [])->filter(fn ($answer) => $answer === 'ya')->count();
+                                    @endphp
                                     <tr>
                                         <td>
                                             <h6 class="mb-0 text-sm">{{ $patient->name }}</h6>
@@ -32,6 +47,16 @@
                                         <td>
                                             <p class="text-sm fw-semibold mb-0">{{ $patient->detail->supervisor->name ?? '-' }}</p>
                                             <p class="text-xs text-muted mb-0">{{ $patient->detail->supervisor->phone ?? '-' }}</p>
+                                        </td>
+                                        <td>
+                                            @if ($latestScreening)
+                                                <span class="badge bg-gradient-{{ $positiveCount >= 2 ? 'danger' : ($positiveCount === 1 ? 'warning text-dark' : 'success') }}">
+                                                    {{ $positiveCount }} indikasi "Ya"
+                                                </span>
+                                                <p class="text-xs text-muted mb-0">{{ $latestScreening->created_at->format('d M Y H:i') }}</p>
+                                            @else
+                                                <span class="badge bg-gradient-secondary">Belum ada</span>
+                                            @endif
                                         </td>
                                         <td>
                                             <span class="badge bg-gradient-info">{{ ucfirst(str_replace('_', ' ', $patient->detail->treatment_status)) }}</span>

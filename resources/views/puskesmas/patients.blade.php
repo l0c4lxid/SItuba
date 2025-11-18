@@ -29,6 +29,7 @@
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Kader Pembina</th>
                                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
                                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Didaftarkan</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Anggota</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -67,6 +68,9 @@
                                         </td>
                                         <td class="text-center">
                                             <span class="text-xs text-muted">{{ $patient->created_at->format('d M Y') }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="{{ route('puskesmas.patient.family', $patient) }}" class="btn btn-sm btn-outline-success">Lihat Anggota</a>
                                         </td>
                                     </tr>
                                 @empty
