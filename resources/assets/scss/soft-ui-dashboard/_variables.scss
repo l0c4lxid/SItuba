@@ -60,7 +60,7 @@ $colors: (
 ) !default;
 // scss-docs-end colors-map
 
-$primary:       $orange !default;
+$primary:       $green !default;
 $secondary:     $gray-500 !default;
 $info:          $blue !default;
 $success:       $green !default;
@@ -108,8 +108,8 @@ $orange-400: #fb923c !default;
 
 
 // Gradient colors
-$primary-gradient:            $orange-600 !default;
-$primary-gradient-state:      $yellow-400 !default;
+$primary-gradient:            $green-600 !default;
+$primary-gradient-state:      $green-400 !default;
 
 $secondary-gradient:          $gray-500 !default;
 $secondary-gradient-state:    $gray-200 !default;
@@ -712,7 +712,7 @@ $text-gradient-bg-clip:       text !default;
 $text-gradient-text-fill:     transparent !default;
 $text-gradient-position:      relative !default;
 $text-gradient-zindex:        1 !default;
-$text-gradient-bg-primary:    linear-gradient(310deg, $orange-600, $yellow-400) !default;
+$text-gradient-bg-primary:    linear-gradient(310deg, $green-600, $lime-400) !default;
 $text-gradient-bg-info:       linear-gradient(310deg, $indigo-600, $cyan-600) !default;
 $text-gradient-bg-success:    linear-gradient(310deg, $green-600, $lime-600) !default;
 $text-gradient-bg-warning:    linear-gradient(310deg, $yellow-600, $orange-600) !default;
