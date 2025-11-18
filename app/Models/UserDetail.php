@@ -19,6 +19,13 @@ class UserDetail extends Model
         'initial_password',
         'family_card_number',
         'supervisor_id',
+        'treatment_status',
+        'next_follow_up_at',
+        'treatment_notes',
+    ];
+
+    protected $casts = [
+        'next_follow_up_at' => 'date',
     ];
 
     public function user(): BelongsTo

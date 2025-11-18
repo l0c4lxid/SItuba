@@ -6,9 +6,53 @@ use App\Models\User;
 use App\Models\UserDetail;
 use App\Models\PatientScreening;
 use App\Models\FamilyMember;
-use Illuminate\Validation\Rule;
+use App\Models\PatientTreatment;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+
+if (!function_exists('ensureFamilyTreatment')) {
+    function ensureFamilyTreatment(User $patient, string $status = 'contacted', ?string $nextFollowUp = null, ?string $notes = null): void
+    {
+        $patient->loadMissing(['detail', 'treatments']);
+        $detail = $patient->detail;
+        if (!$detail) {
+            return;
+        }
+
+        if (!$patient->treatments->count()) {
+            $patient->treatments()->create([
+                'kader_id' => $detail->supervisor_id,
+                'status' => $status,
+                'next_follow_up_at' => $nextFollowUp,
+                'notes' => $notes,
+            ]);
+        }
+
+        $kk = $detail->family_card_number;
+        if (!$kk) {
+            return;
+        }
+
+        $relatedPatients = User::query()
+            ->with(['detail', 'treatments'])
+            ->where('role', UserRole::Pasien->value)
+            ->where('id', '!=', $patient->id)
+            ->whereHas('detail', fn($query) => $query->where('family_card_number', $kk))
+            ->get();
+
+        foreach ($relatedPatients as $relative) {
+            if (!$relative->treatments->count()) {
+                $relative->treatments()->create([
+                    'kader_id' => optional($relative->detail)->supervisor_id,
+                    'status' => $status,
+                    'next_follow_up_at' => $nextFollowUp,
+                    'notes' => $notes,
+                ]);
+            }
+        }
+    }
+}
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Pemda\ProfileController as PemdaProfileController;
@@ -17,11 +61,12 @@ Route::redirect('/', '/login')->name('home');
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function (Request $request) {
-        $user = $request->user()->loadMissing('detail');
+        $user = $request->user()->loadMissing(['detail', 'detail.supervisor']);
         $role = $user->role;
 
         $cards = [];
         $recentScreenings = null;
+        $mutedFollowUps = collect();
 
         $baseScreeningQuery = PatientScreening::query()
             ->with([
@@ -45,8 +90,8 @@ Route::middleware('auth')->group(function () {
                     [
                         'label' => 'Pengguna Aktif',
                         'value' => number_format($activeUsers),
-                        'subtitle' => 'Total '.number_format($totalUsers).' akun',
-                        'trend' => $inactiveUsers.' menunggu verifikasi',
+                        'subtitle' => 'Total ' . number_format($totalUsers) . ' akun',
+                        'trend' => $inactiveUsers . ' menunggu verifikasi',
                         'icon' => 'fa-solid fa-users',
                         'color' => 'primary',
                     ],
@@ -54,7 +99,7 @@ Route::middleware('auth')->group(function () {
                         'label' => 'Puskesmas Terdaftar',
                         'value' => number_format($puskesmasCount),
                         'subtitle' => 'Kemitraan wilayah Surakarta',
-                        'trend' => $kaderCount.' kader aktif',
+                        'trend' => $kaderCount . ' kader aktif',
                         'icon' => 'fa-solid fa-hospital',
                         'color' => 'success',
                     ],
@@ -62,7 +107,7 @@ Route::middleware('auth')->group(function () {
                         'label' => 'Pasien Terpantau',
                         'value' => number_format($patientCount),
                         'subtitle' => 'Seluruh kota',
-                        'trend' => $totalScreenings.' skrining tercatat',
+                        'trend' => $totalScreenings . ' skrining tercatat',
                         'icon' => 'fa-solid fa-user-shield',
                         'color' => 'warning',
                     ],
@@ -74,12 +119,12 @@ Route::middleware('auth')->group(function () {
             case UserRole::Puskesmas:
                 $kaderIds = User::query()
                     ->where('role', UserRole::Kader->value)
-                    ->whereHas('detail', fn ($detail) => $detail->where('supervisor_id', $user->id))
+                    ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $user->id))
                     ->pluck('id');
 
                 $patientIds = User::query()
                     ->where('role', UserRole::Pasien->value)
-                    ->whereHas('detail', fn ($detail) => $detail->whereIn('supervisor_id', $kaderIds))
+                    ->whereHas('detail', fn($detail) => $detail->whereIn('supervisor_id', $kaderIds))
                     ->pluck('id');
 
                 $totalKader = $kaderIds->count();
@@ -101,7 +146,7 @@ Route::middleware('auth')->group(function () {
                         'label' => 'Pasien Binaan',
                         'value' => number_format($totalPatients),
                         'subtitle' => 'Melalui kader mitra',
-                        'trend' => $screeningsCount.' skrining dicatat',
+                        'trend' => $screeningsCount . ' skrining dicatat',
                         'icon' => 'fa-solid fa-users-line',
                         'color' => 'primary',
                     ],
@@ -110,6 +155,24 @@ Route::middleware('auth')->group(function () {
                 $recentScreenings = $patientIds->isEmpty()
                     ? null
                     : $baseScreeningQuery->whereIn('patient_id', $patientIds)->paginate(5);
+
+                $mutedFollowUps = User::query()
+                    ->with(['detail', 'familyMembers'])
+                    ->whereIn('id', $patientIds)
+                    ->whereHas('detail', fn ($detail) => $detail->where('family_card_number', '!=', null))
+                    ->get()
+                    ->filter(function ($patient) {
+                        $kk = $patient->detail->family_card_number;
+                        if (! $kk) {
+                            return false;
+                        }
+                        $suspectFamily = User::query()
+                            ->where('id', '!=', $patient->id)
+                            ->whereHas('detail', fn ($detail) => $detail->where('family_card_number', $kk))
+                            ->whereDoesntHave('treatments')
+                            ->exists();
+                        return $suspectFamily;
+                    });
                 break;
 
             case UserRole::Kader:
@@ -128,7 +191,7 @@ Route::middleware('auth')->group(function () {
                         'label' => 'Pasien Binaan',
                         'value' => number_format($patientsCount),
                         'subtitle' => 'Terdaftar dengan Anda',
-                        'trend' => $screeningsCount.' skrining tercatat',
+                        'trend' => $screeningsCount . ' skrining tercatat',
                         'icon' => 'fa-solid fa-user-nurse',
                         'color' => 'primary',
                     ],
@@ -204,7 +267,7 @@ Route::middleware('auth')->group(function () {
             ->with('detail')
             ->where('role', '!=', UserRole::Pemda->value)
             ->when($request->filled('q'), function ($query) use ($request) {
-                $term = '%'.$request->input('q').'%';
+                $term = '%' . $request->input('q') . '%';
                 $query->where(function ($sub) use ($term) {
                     $sub->where('name', 'like', $term)
                         ->orWhere('phone', 'like', $term)
@@ -259,7 +322,7 @@ Route::middleware('auth')->group(function () {
 
         $kaderIds = User::query()
             ->where('role', UserRole::Kader->value)
-            ->whereHas('detail', fn ($detail) => $detail->where('supervisor_id', $request->user()->id))
+            ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $request->user()->id))
             ->pluck('id')
             ->all();
 
@@ -268,9 +331,9 @@ Route::middleware('auth')->group(function () {
             : User::query()
                 ->with(['detail', 'detail.supervisor'])
                 ->where('role', UserRole::Pasien->value)
-                ->whereHas('detail', fn ($detail) => $detail->whereIn('supervisor_id', $kaderIds))
+                ->whereHas('detail', fn($detail) => $detail->whereIn('supervisor_id', $kaderIds))
                 ->when($request->filled('q'), function ($query) use ($request) {
-                    $term = '%'.$request->input('q').'%';
+                    $term = '%' . $request->input('q') . '%';
                     $query->where(function ($sub) use ($term) {
                         $sub->where('name', 'like', $term)
                             ->orWhere('phone', 'like', $term)
@@ -296,7 +359,7 @@ Route::middleware('auth')->group(function () {
         $patient->loadMissing(['detail.supervisor.detail', 'familyMembers']);
 
         $kader = optional($patient->detail)->supervisor;
-        abort_if(! $kader, 404);
+        abort_if(!$kader, 404);
         abort_if(optional($kader->detail)->supervisor_id !== $request->user()->id, 403);
 
         return view('puskesmas.patient-family', [
@@ -312,7 +375,7 @@ Route::middleware('auth')->group(function () {
 
         $patient->loadMissing(['detail.supervisor.detail']);
         $kader = optional($patient->detail)->supervisor;
-        abort_if(! $kader, 404);
+        abort_if(!$kader, 404);
         abort_if(optional($kader->detail)->supervisor_id !== $request->user()->id, 403);
 
         $validated = $request->validate([
@@ -325,12 +388,50 @@ Route::middleware('auth')->group(function () {
         return back()->with('status', 'Status anggota keluarga diperbarui.');
     })->name('puskesmas.patient.family.update');
 
+    Route::post('/puskesmas/pasien/{patient}/anggota/{member}/promote', function (Request $request, User $patient, FamilyMember $member) {
+        abort_if($request->user()->role !== UserRole::Puskesmas, 403);
+        abort_if($member->patient_id !== $patient->id, 404);
+
+        $patient->loadMissing(['detail.supervisor.detail']);
+        $kader = optional($patient->detail)->supervisor;
+        abort_if(!$kader, 404);
+        abort_if(optional($kader->detail)->supervisor_id !== $request->user()->id, 403);
+        abort_if($member->converted_user_id, 422, 'Anggota sudah menjadi pasien.');
+
+        $password = Str::random(8);
+
+        $newUser = User::create([
+            'name' => $member->name,
+            'phone' => $member->phone ?? '08' . random_int(1000000000, 9999999999),
+            'role' => UserRole::Pasien,
+            'password' => Hash::make($password),
+            'is_active' => true,
+        ]);
+
+        UserDetail::create([
+            'user_id' => $newUser->id,
+            'address' => $patient->detail->address,
+            'family_card_number' => $patient->detail->family_card_number,
+            'notes' => 'Anggota keluarga ' . $patient->name . ' - ' . $member->notes,
+            'supervisor_id' => $kader->id,
+            'initial_password' => $password,
+        ]);
+
+        $member->update(['converted_user_id' => $newUser->id]);
+
+        if ($member->screening_status === 'suspect') {
+            ensureFamilyTreatment($newUser, 'contacted');
+        }
+
+        return back()->with('status', 'Anggota keluarga kini terdaftar sebagai pasien. Password sementara: ' . $password);
+    })->name('puskesmas.patient.family.promote');
+
     Route::get('/puskesmas/skrining', function (Request $request) {
         abort_if($request->user()->role !== UserRole::Puskesmas, 403);
 
         $kaderIds = User::query()
             ->where('role', UserRole::Kader->value)
-            ->whereHas('detail', fn ($detail) => $detail->where('supervisor_id', $request->user()->id))
+            ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $request->user()->id))
             ->pluck('id');
 
         $patients = $kaderIds->isEmpty()
@@ -339,12 +440,12 @@ Route::middleware('auth')->group(function () {
                 ->with([
                     'detail',
                     'detail.supervisor',
-                    'screenings' => fn ($query) => $query->latest()->limit(1),
+                    'screenings' => fn($query) => $query->latest()->limit(1),
                 ])
                 ->where('role', UserRole::Pasien->value)
-                ->whereHas('detail', fn ($detail) => $detail->whereIn('supervisor_id', $kaderIds))
+                ->whereHas('detail', fn($detail) => $detail->whereIn('supervisor_id', $kaderIds))
                 ->when($request->filled('q'), function ($query) use ($request) {
-                    $term = '%'.$request->input('q').'%';
+                    $term = '%' . $request->input('q') . '%';
                     $query->where(function ($sub) use ($term) {
                         $sub->where('name', 'like', $term)
                             ->orWhere('phone', 'like', $term)
@@ -368,7 +469,7 @@ Route::middleware('auth')->group(function () {
 
         $kaderIds = User::query()
             ->where('role', UserRole::Kader->value)
-            ->whereHas('detail', fn ($detail) => $detail->where('supervisor_id', $request->user()->id))
+            ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $request->user()->id))
             ->pluck('id');
 
         $statuses = [
@@ -382,38 +483,49 @@ Route::middleware('auth')->group(function () {
 
         if ($kaderIds->isEmpty()) {
             $counts = collect(array_fill_keys(array_keys($statuses), 0));
-            $patients = collect();
+            $treatments = collect();
+            $eligiblePatients = collect();
         } else {
-            $baseQuery = User::query()
+            $baseQuery = PatientTreatment::query()
                 ->with([
-                    'detail',
-                    'detail.supervisor',
-                    'screenings' => fn ($query) => $query->latest()->limit(1),
+                    'patient.detail',
+                    'patient.detail.supervisor',
+                    'patient.screenings' => fn($query) => $query->latest()->limit(1),
                 ])
-                ->where('role', UserRole::Pasien->value)
-                ->whereHas('detail', function ($detail) use ($kaderIds) {
-                    $detail->whereIn('supervisor_id', $kaderIds)
-                        ->where('treatment_status', '!=', 'none');
+                ->whereHas('patient.detail', function ($detail) use ($kaderIds) {
+                    $detail->whereIn('supervisor_id', $kaderIds);
                 });
 
             $counts = collect();
             foreach (array_keys($statuses) as $status) {
-                $counts[$status] = (clone $baseQuery)->whereHas('detail', fn ($detail) => $detail->where('treatment_status', $status))->count();
+                $counts[$status] = (clone $baseQuery)->where('status', $status)->count();
             }
 
-            $patients = $baseQuery
+            $treatments = $baseQuery
                 ->when($statusParam && array_key_exists($statusParam, $statuses), function ($query) use ($statusParam) {
-                    $query->whereHas('detail', fn ($detail) => $detail->where('treatment_status', $statusParam));
+                    $query->where('status', $statusParam);
                 })
                 ->latest()
+                ->get();
+
+            $eligiblePatients = User::query()
+                ->with(['detail', 'detail.supervisor'])
+                ->where('role', UserRole::Pasien->value)
+                ->whereHas('detail', function ($detail) use ($kaderIds) {
+                    $detail->whereIn('supervisor_id', $kaderIds);
+                })
+                ->whereDoesntHave('treatments')
+                ->has('screenings')
+                ->orderBy('name')
                 ->get();
         }
 
         return view('puskesmas.treatment', [
-            'patients' => $patients,
+            'treatments' => $treatments,
             'statuses' => $statuses,
             'counts' => $counts,
             'activeStatus' => $statusParam,
+            'eligiblePatients' => $eligiblePatients,
         ]);
     })->name('puskesmas.treatment');
 
@@ -421,8 +533,8 @@ Route::middleware('auth')->group(function () {
         abort_if($request->user()->role !== UserRole::Puskesmas, 403);
         abort_if($patient->role !== UserRole::Pasien, 404);
 
-        $patient->loadMissing('detail');
-        abort_if(! $patient->detail, 422);
+        $patient->loadMissing(['detail', 'treatments']);
+        abort_if(!$patient->detail, 422);
 
         $validated = $request->validate([
             'status' => ['required', 'in:contacted,scheduled,in_treatment,recovered'],
@@ -430,14 +542,48 @@ Route::middleware('auth')->group(function () {
             'treatment_notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $patient->detail->update([
-            'treatment_status' => $validated['status'],
+        $treatment = $patient->treatments()->latest()->first();
+        abort_if(!$treatment, 404);
+
+        $treatment->update([
+            'status' => $validated['status'],
             'next_follow_up_at' => $validated['next_follow_up_at'] ?? null,
-            'treatment_notes' => $validated['treatment_notes'] ?? null,
+            'notes' => $validated['treatment_notes'] ?? null,
         ]);
 
         return back()->with('status', 'Status pengobatan pasien diperbarui.');
     })->name('puskesmas.treatment.update');
+
+    Route::post('/puskesmas/berobat', function (Request $request) {
+        abort_if($request->user()->role !== UserRole::Puskesmas, 403);
+
+        $validated = $request->validate([
+            'patient_id' => ['required', 'exists:users,id'],
+            'status' => ['required', 'in:contacted,scheduled,in_treatment,recovered'],
+            'next_follow_up_at' => ['nullable', 'date'],
+            'treatment_notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $patient = User::query()
+            ->with(['detail.supervisor.detail', 'treatments'])
+            ->where('role', UserRole::Pasien->value)
+            ->findOrFail($validated['patient_id']);
+
+        $kader = optional($patient->detail)->supervisor;
+        abort_if(!$kader, 404);
+        abort_if(optional($kader->detail)->supervisor_id !== $request->user()->id, 403);
+
+        abort_if($patient->treatments()->exists(), 422, 'Pasien sudah ada dalam daftar pengobatan.');
+
+        ensureFamilyTreatment(
+            $patient,
+            $validated['status'],
+            $validated['next_follow_up_at'] ?? null,
+            $validated['treatment_notes'] ?? null,
+        );
+
+        return back()->with('status', 'Pasien ditambahkan ke daftar pengobatan.');
+    })->name('puskesmas.treatment.store');
 
     Route::get('/puskesmas/kader', function (Request $request) {
         abort_if($request->user()->role !== UserRole::Puskesmas, 403);
@@ -445,13 +591,13 @@ Route::middleware('auth')->group(function () {
         $kaders = User::query()
             ->with('detail')
             ->where('role', UserRole::Kader->value)
-            ->whereHas('detail', fn ($detail) => $detail->where('supervisor_id', $request->user()->id))
+            ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $request->user()->id))
             ->when($request->filled('q'), function ($query) use ($request) {
-                $term = '%'.$request->input('q').'%';
+                $term = '%' . $request->input('q') . '%';
                 $query->where(function ($sub) use ($term) {
                     $sub->where('name', 'like', $term)
                         ->orWhere('phone', 'like', $term)
-                        ->orWhereHas('detail', fn ($detail) => $detail->where('notes', 'like', $term));
+                        ->orWhereHas('detail', fn($detail) => $detail->where('notes', 'like', $term));
                 });
             })
             ->latest()
@@ -471,7 +617,7 @@ Route::middleware('auth')->group(function () {
             ->where('role', UserRole::Puskesmas->value)
             ->whereRelation('detail', 'supervisor_id', $request->user()->id)
             ->when($request->filled('q'), function ($query) use ($request) {
-                $term = '%'.$request->input('q').'%';
+                $term = '%' . $request->input('q') . '%';
                 $query->where(function ($sub) use ($term) {
                     $sub->where('name', 'like', $term)
                         ->orWhereHas('detail', function ($detail) use ($term) {
@@ -521,7 +667,7 @@ Route::middleware('auth')->group(function () {
             ])
             ->where('role', UserRole::Pasien->value)
             ->when($request->filled('q'), function ($query) use ($request) {
-                $term = '%'.$request->input('q').'%';
+                $term = '%' . $request->input('q') . '%';
                 $query->where(function ($sub) use ($term) {
                     $sub->where('name', 'like', $term)
                         ->orWhere('phone', 'like', $term)
@@ -544,11 +690,11 @@ Route::middleware('auth')->group(function () {
         abort_if(auth()->user()->role !== UserRole::Kader, 403);
 
         $patients = User::query()
-            ->with(['detail', 'screenings' => fn ($query) => $query->latest()])
+            ->with(['detail', 'screenings' => fn($query) => $query->latest()])
             ->where('role', UserRole::Pasien->value)
             ->whereRelation('detail', 'supervisor_id', $request->user()->id)
             ->when($request->filled('q'), function ($query) use ($request) {
-                $term = '%'.$request->input('q').'%';
+                $term = '%' . $request->input('q') . '%';
                 $query->where(function ($sub) use ($term) {
                     $sub->where('name', 'like', $term)
                         ->orWhere('phone', 'like', $term)
@@ -571,11 +717,11 @@ Route::middleware('auth')->group(function () {
         abort_if(auth()->user()->role !== UserRole::Kader, 403);
 
         $patientsQuery = User::query()
-            ->with(['detail', 'screenings' => fn ($query) => $query->latest()->limit(1)])
+            ->with(['detail', 'screenings' => fn($query) => $query->latest()->limit(1)])
             ->where('role', UserRole::Pasien->value)
             ->whereRelation('detail', 'supervisor_id', $request->user()->id)
             ->when($request->filled('q'), function ($query) use ($request) {
-                $term = '%'.$request->input('q').'%';
+                $term = '%' . $request->input('q') . '%';
                 $query->where(function ($sub) use ($term) {
                     $sub->where('name', 'like', $term)
                         ->orWhere('phone', 'like', $term)
@@ -624,7 +770,7 @@ Route::middleware('auth')->group(function () {
             'address' => ['required', 'string', 'max:255'],
         ]);
 
-        $password = 'tbc'.random_int(1000, 9999);
+        $password = 'tbc' . random_int(1000, 9999);
 
         $user = User::create([
             'name' => $validated['name'],
@@ -642,7 +788,7 @@ Route::middleware('auth')->group(function () {
             'initial_password' => $password,
         ]);
 
-        return redirect()->route('kader.patients')->with('status', 'Pasien baru berhasil dibuat. Password sementara: '.$password);
+        return redirect()->route('kader.patients')->with('status', 'Pasien baru berhasil dibuat. Password sementara: ' . $password);
     })->name('kader.patients.store');
 
     Route::get('/kader/pasien/{patient}', function (Request $request, User $patient) {
@@ -734,9 +880,9 @@ Route::middleware('auth')->group(function () {
             'notes' => null,
         ]);
 
-        $positiveCount = collect($validated)->filter(fn ($answer) => $answer === 'ya')->count();
-        if ($positiveCount >= 2 && $patient->detail) {
-            $patient->detail->update(['treatment_status' => 'contacted']);
+        $positiveCount = collect($validated)->filter(fn($answer) => $answer === 'ya')->count();
+        if ($positiveCount >= 2) {
+            ensureFamilyTreatment($patient, 'contacted');
         }
 
         return redirect()->route('kader.patients')->with('status', 'Skrining pasien telah dicatat.');
@@ -791,9 +937,9 @@ Route::middleware('auth')->group(function () {
             'notes' => null,
         ]);
 
-        $positiveCount = collect($validated)->filter(fn ($answer) => $answer === 'ya')->count();
-        if ($positiveCount >= 2 && $user->detail) {
-            $user->detail->update(['treatment_status' => 'contacted']);
+        $positiveCount = collect($validated)->filter(fn($answer) => $answer === 'ya')->count();
+        if ($positiveCount >= 2) {
+            ensureFamilyTreatment($user, 'contacted');
         }
 
         return redirect()->route('patient.screening')->with('status', 'Terima kasih, skrining mandiri berhasil dikirim.');
@@ -877,7 +1023,7 @@ Route::middleware('auth')->group(function () {
 
         $validated = $request->validate($rules);
 
-        $positive = collect($validated)->filter(fn ($answer) => $answer === 'ya')->count();
+        $positive = collect($validated)->filter(fn($answer) => $answer === 'ya')->count();
         $status = $positive >= 2 ? 'suspect' : ($positive === 1 ? 'in_progress' : 'clear');
 
         $member->update([
@@ -890,4 +1036,4 @@ Route::middleware('auth')->group(function () {
     })->name('patient.family.screening.store');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

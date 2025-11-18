@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\FamilyMember;
+use App\Models\PatientTreatment;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -62,5 +63,10 @@ class User extends Authenticatable
     public function familyMembers(): HasMany
     {
         return $this->hasMany(FamilyMember::class, 'patient_id');
+    }
+
+    public function treatments(): HasMany
+    {
+        return $this->hasMany(PatientTreatment::class, 'patient_id');
     }
 }

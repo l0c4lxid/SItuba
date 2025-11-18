@@ -4,21 +4,26 @@
     <div class="row">
         <div class="col-12">
             <div class="card shadow-sm border-0">
-                <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                <div class="card-header d-flex flex-wrap justify-content-between alignments-center">
                     <div>
                         <h5 class="mb-0">Pengelolaan Pengobatan Pasien</h5>
                         <p class="text-sm text-muted mb-0">Pantau progres pasien yang sedang ditindaklanjuti pengobatan TBC.</p>
                     </div>
-                    <ul class="nav nav-pills">
-                        @foreach ($statuses as $value => $label)
-                            <li class="nav-item">
-                                <a class="nav-link {{ $activeStatus === $value ? 'active' : '' }}" href="{{ route('puskesmas.treatment', ['status' => $value]) }}">
-                                    {{ $label }}
-                                    <span class="badge bg-white text-dark ms-1">{{ $counts[$value] ?? 0 }}</span>
-                                </a>
-                            </li>
-                        @endforeach
-                    </ul>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <ul class="nav nav-pills">
+                            @foreach ($statuses as $value => $label)
+                                <li class="nav-item">
+                                    <a class="nav-link {{ $activeStatus === $value ? 'active' : '' }}" href="{{ route('puskesmas.treatment', ['status' => $value]) }}">
+                                        {{ $label }}
+                                        <span class="badge bg-white text-dark ms-1">{{ $counts[$value] ?? 0 }}</span>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addTreatmentModal" {{ $eligiblePatients->isEmpty() ? 'disabled' : '' }}>
+                            <i class="fa fa-plus me-1"></i> Tambah Pasien
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -34,8 +39,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($patients as $patient)
+                                @forelse ($treatments as $treatment)
                                     @php
+                                        $patient = $treatment->patient;
                                         $latestScreening = $patient->screenings->first();
                                         $positiveCount = collect($latestScreening->answers ?? [])->filter(fn ($answer) => $answer === 'ya')->count();
                                     @endphp
@@ -59,23 +65,28 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <span class="badge bg-gradient-info">{{ ucfirst(str_replace('_', ' ', $patient->detail->treatment_status)) }}</span>
-                                            @if ($patient->detail->treatment_notes)
-                                                <p class="text-xs text-muted mb-0">{{ $patient->detail->treatment_notes }}</p>
+                                            <span class="badge bg-gradient-info">{{ ucfirst(str_replace('_', ' ', $treatment->status)) }}</span>
+                                            @if ($treatment->notes)
+                                                <p class="text-xs text-muted mb-0">{{ $treatment->notes }}</p>
                                             @endif
                                         </td>
                                         <td>
-                                            @if ($patient->detail->next_follow_up_at)
-                                                <span class="text-xs text-muted">{{ \Carbon\Carbon::parse($patient->detail->next_follow_up_at)->format('d M Y') }}</span>
+                                            @if ($treatment->next_follow_up_at)
+                                                <span class="text-xs text-muted">{{ $treatment->next_follow_up_at->format('d M Y') }}</span>
                                             @else
                                                 <span class="text-xs text-muted">Belum dijadwalkan</span>
                                             @endif
                                         </td>
                                         <td>
-                                            <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#treatmentModal{{ $patient->id }}">
-                                                Perbarui
-                                            </button>
-                                            <div class="modal fade" id="treatmentModal{{ $patient->id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#treatmentModal{{ $treatment->id }}">
+                                                    Perbarui
+                                                </button>
+                                                <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#historyModal{{ $patient->id }}">
+                                                    Riwayat
+                                                </button>
+                                            </div>
+                                            <div class="modal fade" id="treatmentModal{{ $treatment->id }}" tabindex="-1" aria-hidden="true">
                                                 <div class="modal-dialog">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
@@ -89,17 +100,17 @@
                                                                     <label class="form-label">Status Pengobatan</label>
                                                                     <select name="status" class="form-select">
                                                                         @foreach (['contacted' => 'Sudah Dihubungi', 'scheduled' => 'Terjadwal Datang', 'in_treatment' => 'Sedang Berobat', 'recovered' => 'Selesai / Sembuh'] as $value => $label)
-                                                                            <option value="{{ $value }}" @selected($patient->detail->treatment_status === $value)>{{ $label }}</option>
+                                                                            <option value="{{ $value }}" @selected($treatment->status === $value)>{{ $label }}</option>
                                                                         @endforeach
                                                                     </select>
                                                                 </div>
                                                                 <div class="mb-3">
                                                                     <label class="form-label">Jadwal Kontrol Berikutnya</label>
-                                                                    <input type="date" name="next_follow_up_at" class="form-control" value="{{ $patient->detail->next_follow_up_at }}">
+                                                                    <input type="date" name="next_follow_up_at" class="form-control" value="{{ optional($treatment->next_follow_up_at)->toDateString() }}">
                                                                 </div>
                                                                 <div class="mb-3">
                                                                     <label class="form-label">Catatan</label>
-                                                                    <textarea name="treatment_notes" rows="3" class="form-control">{{ $patient->detail->treatment_notes }}</textarea>
+                                                                    <textarea name="treatment_notes" rows="3" class="form-control">{{ $treatment->notes }}</textarea>
                                                                 </div>
                                                             </div>
                                                             <div class="modal-footer">
@@ -110,17 +121,109 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div class="modal fade" id="historyModal{{ $patient->id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog modal-lg">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h6 class="modal-title">Riwayat Pengobatan {{ $patient->name }}</h6>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="table-responsive">
+                                                                <table class="table align-items-center">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Status</th>
+                                                                            <th>Catatan</th>
+                                                                            <th>Jadwal Kontrol</th>
+                                                                            <th>Diperbarui</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @foreach ($patient->treatments()->latest()->get() as $history)
+                                                                            <tr>
+                                                                                <td>
+                                                                                    <span class="badge bg-gradient-info">{{ ucfirst(str_replace('_', ' ', $history->status)) }}</span>
+                                                                                    @if ($history->completed_at)
+                                                                                        <span class="text-xs text-muted d-block">Selesai {{ $history->completed_at->format('d M Y') }}</span>
+                                                                                    @endif
+                                                                                </td>
+                                                                                <td>{{ $history->notes ?? '-' }}</td>
+                                                                                <td>{{ optional($history->next_follow_up_at)->format('d M Y') ?? '-' }}</td>
+                                                                                <td class="text-xs text-muted">{{ $history->updated_at->format('d M Y H:i') }}</td>
+                                                                            </tr>
+                                                                        @endforeach
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center text-muted">Belum ada pasien dalam pengobatan.</td>
+                                        <td colspan="6" class="text-center text-muted">Belum ada pasien dalam pengobatan.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addTreatmentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title">Tambah Pasien ke Pengobatan</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="{{ route('puskesmas.treatment.store') }}">
+                    @csrf
+                    <div class="modal-body">
+                        @if ($eligiblePatients->isEmpty())
+                            <div class="alert alert-secondary mb-0">Tidak ada pasien yang siap dimasukkan. Pastikan pasien sudah melakukan skrining.</div>
+                        @else
+                            <div class="mb-3">
+                                <label class="form-label">Pilih Pasien</label>
+                                <select name="patient_id" class="form-select" required>
+                                    <option value="">-- Pilih Pasien --</option>
+                                    @foreach ($eligiblePatients as $candidate)
+                                        <option value="{{ $candidate->id }}">{{ $candidate->name }} ({{ $candidate->detail->supervisor->name ?? 'Tanpa Kader' }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Status Pengobatan</label>
+                                <select name="status" class="form-select">
+                                    <option value="contacted">Sudah Dihubungi</option>
+                                    <option value="scheduled">Terjadwal Datang</option>
+                                    <option value="in_treatment">Sedang Berobat</option>
+                                    <option value="recovered">Selesai / Sembuh</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Jadwal Kontrol Berikutnya</label>
+                                <input type="date" name="next_follow_up_at" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Catatan</label>
+                                <textarea name="treatment_notes" rows="3" class="form-control" placeholder="Catatan tindak lanjut"></textarea>
+                            </div>
+                        @endif
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success" {{ $eligiblePatients->isEmpty() ? 'disabled' : '' }}>Simpan</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

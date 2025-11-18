@@ -33,7 +33,7 @@
         @endforeach
     </div>
 
-    @if ($user->role === \App\Enums\UserRole::Pasien && in_array($user->detail->treatment_status ?? 'none', ['contacted', 'scheduled']))
+    @if ($user->role === \App\Enums\UserRole::Pasien && in_array(optional($user->treatments()->latest()->first())->status ?? 'none', ['contacted', 'scheduled']))
         <div class="alert alert-warning mt-4" role="alert">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                 <div>
@@ -46,6 +46,26 @@
                     <a href="{{ route('patient.screening') }}" class="btn btn-sm btn-danger">
                         <i class="fa-solid fa-notes-medical me-1"></i> Lakukan Skrining Mandiri
                     </a>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if ($user->role === \App\Enums\UserRole::Puskesmas && isset($mutedFollowUps) && $mutedFollowUps->isNotEmpty())
+        <div class="alert alert-info mt-4" role="alert">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <strong>Pengingat!</strong> Ada keluarga yang belum semua anggota melakukan skrining/pengobatan. Tindaklanjuti segera.
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    @foreach ($mutedFollowUps->take(3) as $patient)
+                        <a href="{{ route('puskesmas.patient.family', $patient) }}" class="btn btn-sm btn-outline-info">
+                            {{ $patient->name }} (KK: {{ $patient->detail->family_card_number }})
+                        </a>
+                    @endforeach
+                    @if ($mutedFollowUps->count() > 3)
+                        <span class="badge bg-gradient-info">+{{ $mutedFollowUps->count() - 3 }} lainnya</span>
+                    @endif
                 </div>
             </div>
         </div>
