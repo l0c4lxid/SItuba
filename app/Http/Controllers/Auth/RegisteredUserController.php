@@ -51,7 +51,7 @@ class RegisteredUserController extends Controller
 
         $baseRules = [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'phone' => ['required', 'string', 'max:25', 'unique:'.User::class],
             'role' => ['required', Rule::enum(UserRole::class), Rule::notIn([UserRole::Pemda->value])],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ];
@@ -93,7 +93,8 @@ class RegisteredUserController extends Controller
 
         $user = User::create([
             'name' => $validated['name'],
-            'email' => $validated['email'],
+            'email' => $validated['phone'].'@sigap-tbc.local',
+            'phone' => $validated['phone'],
             'role' => $request->enum('role', UserRole::class),
             'password' => Hash::make($validated['password']),
             'is_active' => true,

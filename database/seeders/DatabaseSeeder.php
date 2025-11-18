@@ -22,12 +22,17 @@ class DatabaseSeeder extends Seeder
             ['email' => 'pemda@pemda.com'],
             [
                 'name' => 'Pemda',
+                'phone' => '081234567890',
                 'password' => Hash::make('pemda123'),
                 'role' => UserRole::Pemda->value,
                 'is_active' => true,
                 'email_verified_at' => now(),
             ]
         );
+
+        if (! $pemda->phone) {
+            $pemda->update(['phone' => '081234567890']);
+        }
 
         UserDetail::updateOrCreate(
             ['user_id' => $pemda->id],

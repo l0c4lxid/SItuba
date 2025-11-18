@@ -163,8 +163,8 @@
 
                                     <div class="row g-3 mt-4">
                                         <div class="col-md-6">
-                                            <label for="email" class="form-label">Email</label>
-                                            <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required>
+                                            <label for="phone" class="form-label">Nomor HP (untuk login)</label>
+                                            <input type="text" class="form-control" id="phone" name="phone" value="{{ old('phone') }}" required>
                                         </div>
                                         <div class="col-md-6">
                                             <label for="password" class="form-label">Password</label>

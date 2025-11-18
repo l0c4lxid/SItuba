@@ -55,9 +55,9 @@
                                     @endif
                                     <form method="POST" action="{{ route('login') }}" role="form">
                                         @csrf
-                                        <label for="email">Email</label>
+                                        <label for="phone">Nomor HP</label>
                                         <div class="mb-3">
-                                            <input type="email" id="email" name="email" class="form-control" placeholder="nama@email.com" value="{{ old('email') }}" required autofocus>
+                                            <input type="text" id="phone" name="phone" class="form-control" placeholder="08xxxxxxxxxx" value="{{ old('phone') }}" required autofocus>
                                         </div>
                                         <label for="password">Password</label>
                                         <div class="mb-3">
@@ -74,10 +74,7 @@
                                 </div>
                                 <div class="card-footer text-center pt-0 px-lg-2 px-1">
                                     <p class="mb-2 text-sm mx-auto">
-                                        Lupa password?
-                                        @if (Route::has('password.request'))
-                                            <a href="{{ route('password.request') }}" class="text-info text-gradient font-weight-bold">Reset di sini</a>
-                                        @endif
+                                        Lupa password? Hubungi admin SIGAP TBC untuk reset akun.
                                     </p>
                                     <p class="mb-4 text-sm mx-auto">
                                         Belum punya akun?
