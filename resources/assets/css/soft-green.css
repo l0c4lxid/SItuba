@@ -1,0 +1,210 @@
+:root {
+    --green-50: #e9f9f0;
+    --green-100: #d7f4e1;
+    --green-200: #b1e9c7;
+    --green-300: #82dfa0;
+    --green-400: #4fd47f;
+    --green-500: #23c25a; /* primary */
+    --green-600: #1ea84a;
+    --green-700: #17863a;
+    --green-800: #11672b;
+    --bg: linear-gradient(135deg, #0f2b1f 0%, #083018 50%, #021b0f 100%);
+    --glass: rgba(255, 255, 255, 0.06);
+    --card-shadow: 0 6px 18px rgba(8, 29, 14, 0.18);
+    --accent-gradient: linear-gradient(
+        135deg,
+        rgba(35, 194, 90, 1) 0%,
+        rgba(30, 168, 74, 1) 50%,
+        rgba(23, 134, 58, 1) 100%
+    );
+    --muted: #b6cfc0;
+    --radius: 12px;
+}
+
+/* Body + container */
+body {
+    background: var(--bg);
+    color: #e6f7ee;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.4;
+}
+
+/* Top navbar */
+.topbar {
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.02),
+        rgba(255, 255, 255, 0.01)
+    );
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* Sidebar */
+.app-sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: linear-gradient(
+        180deg,
+        rgba(38, 170, 95, 0.14),
+        rgba(9, 43, 24, 0.6)
+    );
+    border-right: 1px solid rgba(255, 255, 255, 0.03);
+    padding: 1.25rem;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow-y: auto;
+}
+.app-sidebar .brand {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+.brand .logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--accent-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 20px rgba(11, 62, 34, 0.38);
+}
+.app-sidebar .nav-item {
+    color: var(--muted);
+    padding: 0.6rem 0.75rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.18s ease;
+    margin-bottom: 0.35rem;
+    text-decoration: none;
+}
+.app-sidebar .nav-item i {
+    font-size: 18px;
+    width: 22px;
+    text-align: center;
+}
+.app-sidebar .nav-item:hover,
+.app-sidebar .nav-item.active {
+    color: #fff;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.03),
+        rgba(255, 255, 255, 0.02)
+    );
+    transform: translateX(4px);
+    box-shadow: 0 8px 26px rgba(5, 40, 20, 0.18);
+}
+
+/* Main content area */
+.app-main {
+    margin-left: 280px;
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: var(--radius);
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.02),
+        rgba(255, 255, 255, 0.01)
+    );
+    box-shadow: var(--card-shadow);
+    color: #e8f8ef;
+    overflow: hidden;
+}
+.card .card-header {
+    background: transparent;
+    border-bottom: none;
+    padding-bottom: 0.75rem;
+}
+
+/* Stat icon */
+.icon-shape {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(6, 38, 22, 0.22);
+}
+.icon-gradient {
+    background: var(--accent-gradient);
+}
+
+/* Badges */
+.badge {
+    border-radius: 999px;
+    padding: 0.45rem 0.6rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+/* Lists */
+.list-group-item {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 0.9rem 0.6rem;
+}
+.list-group-item .avatar {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    margin-right: 0.75rem;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .app-sidebar {
+        position: relative;
+        width: 100%;
+        min-width: 100%;
+        height: auto;
+    }
+    .app-main {
+        margin-left: 0;
+        padding: 1rem;
+    }
+}
+
+/* small utility tweaks */
+.text-success {
+    color: #a8f5c9 !important;
+    font-weight: 700;
+}
+.text-danger {
+    color: #ffb3b0 !important;
+    font-weight: 700;
+}
+h6 {
+    color: #e9f9f0;
+    font-weight: 700;
+}
+.text-sm {
+    color: var(--muted);
+}
+.numbers h5 {
+    font-weight: 800;
+    font-size: 1.45rem;
+    color: #ffffff;
+}
+.p-3 .row .numbers p {
+    color: var(--muted);
+}
