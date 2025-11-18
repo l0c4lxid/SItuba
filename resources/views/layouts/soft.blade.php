@@ -36,6 +36,12 @@
     ];
 
     $navItems = $navPresets[$role?->value ?? UserRole::Pasien->value] ?? reset($navPresets);
+
+    $profileNav = [
+        'label' => $role === UserRole::Pemda ? 'Profil Pemda' : 'Profil Saya',
+        'url' => $role === UserRole::Pemda ? route('pemda.profile.edit') : route('profile.edit'),
+        'icon' => 'profile',
+    ];
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -57,7 +63,7 @@
 
 <body class="g-sidenav-show bg-gray-100">
     <div class="min-height-300 bg-primary position-absolute w-100"></div>
-    @include('layouts.partials.soft-sidebar', ['navItems' => $navItems])
+    @include('layouts.partials.soft-sidebar', ['navItems' => $navItems, 'profileNav' => $profileNav])
 
     <main class="main-content position-relative bg-gray-100 max-height-vh-100 h-100 border-radius-lg">
         <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur" navbar-scroll="true">
@@ -82,7 +88,14 @@
                                 <span class="d-sm-inline d-none me-2">{{ $user?->name }}</span>
                                 <i class="fa fa-chevron-down text-sm"></i>
                             </a>
+                            @php
+                                $profileLink = $role === \App\Enums\UserRole::Pemda ? route('pemda.profile.edit') : route('profile.edit');
+                                $profileText = $role === \App\Enums\UserRole::Pemda ? 'Profil Pemda' : 'Profil Saya';
+                            @endphp
                             <div class="dropdown-menu dropdown-menu-end px-2 py-2 me-sm-n4" aria-labelledby="profileDropdown">
+                                <a class="dropdown-item d-flex align-items-center gap-2" href="{{ $profileLink }}">
+                                    <i class="fa-solid fa-id-badge text-primary"></i> {{ $profileText }}
+                                </a>
                                 <form method="POST" action="{{ route('logout') }}" data-confirm="Keluar dari aplikasi?" data-confirm-text="Ya, keluar">
                                     @csrf
                                     <button type="submit" class="dropdown-item border-0 d-flex align-items-center gap-2">

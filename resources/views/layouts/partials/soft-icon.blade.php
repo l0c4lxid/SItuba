@@ -35,6 +35,9 @@
     @case('verify')
         <i class="fa-solid fa-user-check text-warning"></i>
         @break
+    @case('profile')
+        <i class="fa-solid fa-id-badge text-info"></i>
+        @break
     @default
         <i class="fa-regular fa-circle text-secondary"></i>
 @endswitch

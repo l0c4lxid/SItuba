@@ -1,30 +1,30 @@
 @extends('layouts.soft')
 
 @section('content')
-    <form method="POST" action="{{ route('profile.update') }}" id="generalProfileForm" data-original-phone="{{ $user->phone }}">
+    <form method="POST" action="{{ route('pemda.profile.update') }}" id="pemdaProfileForm" data-original-phone="{{ $user->phone }}">
         @csrf
-        @method('PATCH')
+        @method('PUT')
         <div class="row">
             <div class="col-lg-7 mb-4">
                 <div class="card shadow-sm border-0">
                     <div class="card-header pb-1 d-flex align-items-center gap-2">
                         <div class="icon icon-shape bg-gradient-primary shadow text-center border-radius-md">
-                            <i class="fa-solid fa-user-pen text-white"></i>
+                            <i class="fa-solid fa-address-card text-white"></i>
                         </div>
                         <div>
-                            <h5 class="mb-0">Detail Profil</h5>
-                            <p class="text-sm text-muted mb-0">Perbarui identitas dan informasi tambahan Anda.</p>
+                            <h5 class="mb-0">Detail Penanggung Jawab</h5>
+                            <p class="text-sm text-muted mb-0">Perbarui identitas dan informasi Pemda.</p>
                         </div>
                     </div>
                     <hr class="horizontal dark opacity-10 my-0">
                     <div class="card-body">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">Nama Lengkap</label>
+                                <label class="form-label">Nama Penanggung Jawab</label>
                                 <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Instansi / Organisasi</label>
+                                <label class="form-label">Instansi / Pemda</label>
                                 <input type="text" name="organization" class="form-control" value="{{ old('organization', $user->detail->organization ?? '') }}">
                             </div>
                             <div class="col-md-6">
@@ -47,7 +47,7 @@
                 <div class="card shadow-sm border-0">
                     <div class="card-header pb-1 d-flex align-items-center gap-2">
                         <div class="icon icon-shape bg-gradient-dark shadow text-center border-radius-md">
-                            <i class="fa-solid fa-lock text-white"></i>
+                            <i class="fa-solid fa-shield-halved text-white"></i>
                         </div>
                         <div>
                             <h5 class="mb-0">Keamanan Akun</h5>
@@ -74,15 +74,15 @@
             </div>
         </div>
         <div class="text-end mt-3">
-            <button type="button" class="btn btn-primary px-5" onclick="confirmGeneralProfile()">Simpan perubahan</button>
+            <button type="button" class="btn btn-primary px-5" onclick="confirmPemdaProfile()">Simpan perubahan</button>
         </div>
     </form>
 @endsection
 
 @push('scripts')
     <script>
-        function confirmGeneralProfile() {
-            const form = document.getElementById('generalProfileForm');
+        function confirmPemdaProfile() {
+            const form = document.getElementById('pemdaProfileForm');
             if (! form) return;
 
             const originalPhone = form.dataset.originalPhone;
@@ -97,7 +97,7 @@
                 changes.push('password akan diganti');
             }
 
-            let message = 'Simpan perubahan profil?';
+            let message = 'Simpan perubahan profil Pemda?';
             if (changes.length) {
                 message = 'Anda akan ' + changes.join(' dan ') + '. Tetap lanjutkan?';
             }

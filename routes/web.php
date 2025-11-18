@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Pemda\ProfileController as PemdaProfileController;
 
 Route::redirect('/', '/login')->name('home');
 
@@ -66,6 +67,11 @@ Route::middleware('auth')->group(function () {
 
         return back()->with('status', 'Semua status pengguna berhasil diperbarui.');
     })->name('pemda.verification.bulk-status');
+
+    Route::get('/pemda/profil', [PemdaProfileController::class, 'edit'])
+        ->name('pemda.profile.edit');
+    Route::put('/pemda/profil', [PemdaProfileController::class, 'update'])
+        ->name('pemda.profile.update');
 });
 
 require __DIR__.'/auth.php';

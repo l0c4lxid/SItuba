@@ -25,6 +25,13 @@
                     </a>
                 </li>
             @endforeach
+            @if (! empty($profileNav))
+                <li class="nav-item d-md-none px-3 mt-3">
+                    <a class="btn btn-sm btn-outline-primary w-100" href="{{ $profileNav['url'] }}">
+                        <i class="fa-solid fa-id-badge me-2"></i>{{ $profileNav['label'] }}
+                    </a>
+                </li>
+            @endif
             <li class="nav-item d-md-none mt-3 px-3">
                 <form method="POST" action="{{ route('logout') }}" data-confirm="Keluar dari aplikasi?" data-confirm-text="Ya, keluar">
                     @csrf

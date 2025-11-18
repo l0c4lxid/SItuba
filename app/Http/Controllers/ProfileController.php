@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\UserDetail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
@@ -17,7 +19,7 @@ class ProfileController extends Controller
     public function edit(Request $request): View
     {
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $request->user()->loadMissing('detail'),
         ]);
     }
 
@@ -33,11 +35,23 @@ class ProfileController extends Controller
             'name' => $validated['name'],
             'phone' => $validated['phone'],
             'email' => $validated['phone'].'@sigap-tbc.local',
-        ]);
+        ])->save();
 
-        $user->save();
+        UserDetail::updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'organization' => $validated['organization'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'phone' => $validated['detail_phone'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+            ],
+        );
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        if (! empty($validated['password'])) {
+            $user->forceFill(['password' => Hash::make($validated['password'])])->save();
+        }
+
+        return Redirect::route('profile.edit')->with('status', 'Profil berhasil diperbarui.');
     }
 
     /**
