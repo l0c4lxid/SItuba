@@ -78,6 +78,142 @@ Route::middleware('auth')->group(function () {
     Route::put('/pemda/profil', [PemdaProfileController::class, 'update'])
         ->name('pemda.profile.update');
 
+    Route::get('/puskesmas/pasien', function (Request $request) {
+        abort_if($request->user()->role !== UserRole::Puskesmas, 403);
+
+        $kaderIds = User::query()
+            ->where('role', UserRole::Kader->value)
+            ->whereHas('detail', fn ($detail) => $detail->where('supervisor_id', $request->user()->id))
+            ->pluck('id')
+            ->all();
+
+        $patients = empty($kaderIds)
+            ? collect()
+            : User::query()
+                ->with(['detail', 'detail.supervisor'])
+                ->where('role', UserRole::Pasien->value)
+                ->whereHas('detail', fn ($detail) => $detail->whereIn('supervisor_id', $kaderIds))
+                ->when($request->filled('q'), function ($query) use ($request) {
+                    $term = '%'.$request->input('q').'%';
+                    $query->where(function ($sub) use ($term) {
+                        $sub->where('name', 'like', $term)
+                            ->orWhere('phone', 'like', $term)
+                            ->orWhereHas('detail', function ($detail) use ($term) {
+                                $detail->where('address', 'like', $term)
+                                    ->orWhere('nik', 'like', $term);
+                            });
+                    });
+                })
+                ->latest()
+                ->get();
+
+        return view('puskesmas.patients', [
+            'patients' => $patients,
+            'search' => $request->input('q', ''),
+        ]);
+    })->name('puskesmas.patients');
+
+    Route::get('/puskesmas/kader', function (Request $request) {
+        abort_if($request->user()->role !== UserRole::Puskesmas, 403);
+
+        $kaders = User::query()
+            ->with('detail')
+            ->where('role', UserRole::Kader->value)
+            ->whereHas('detail', fn ($detail) => $detail->where('supervisor_id', $request->user()->id))
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $term = '%'.$request->input('q').'%';
+                $query->where(function ($sub) use ($term) {
+                    $sub->where('name', 'like', $term)
+                        ->orWhere('phone', 'like', $term)
+                        ->orWhereHas('detail', fn ($detail) => $detail->where('notes', 'like', $term));
+                });
+            })
+            ->latest()
+            ->get();
+
+        return view('puskesmas.kaders', [
+            'kaders' => $kaders,
+            'search' => $request->input('q', ''),
+        ]);
+    })->name('puskesmas.kaders');
+
+    Route::get('/kelurahan/puskesmas', function (Request $request) {
+        abort_if($request->user()->role !== UserRole::Kelurahan, 403);
+
+        $puskesmasList = User::query()
+            ->with('detail')
+            ->where('role', UserRole::Puskesmas->value)
+            ->whereRelation('detail', 'supervisor_id', $request->user()->id)
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $term = '%'.$request->input('q').'%';
+                $query->where(function ($sub) use ($term) {
+                    $sub->where('name', 'like', $term)
+                        ->orWhereHas('detail', function ($detail) use ($term) {
+                            $detail->where('address', 'like', $term)
+                                ->orWhere('organization', 'like', $term);
+                        });
+                });
+            })
+            ->latest()
+            ->get();
+
+        return view('kelurahan.puskesmas', [
+            'puskesmasList' => $puskesmasList,
+            'search' => $request->input('q', ''),
+        ]);
+    })->name('kelurahan.puskesmas');
+
+    Route::get('/kader/puskesmas', function (Request $request) {
+        abort_if($request->user()->role !== UserRole::Kader, 403);
+
+        $request->user()->loadMissing('detail');
+        $puskesmasId = optional($request->user()->detail)->supervisor_id;
+
+        $puskesmas = null;
+        if ($puskesmasId) {
+            $puskesmas = User::query()
+                ->with('detail')
+                ->where('role', UserRole::Puskesmas->value)
+                ->where('id', $puskesmasId)
+                ->first();
+        }
+
+        return view('kader.puskesmas', [
+            'puskesmas' => $puskesmas,
+        ]);
+    })->name('kader.puskesmas');
+
+    Route::get('/pemda/pasien', function (Request $request) {
+        abort_if($request->user()->role !== UserRole::Pemda, 403);
+
+        $patients = User::query()
+            ->with([
+                'detail',
+                'detail.supervisor',
+                'detail.supervisor.detail',
+                'detail.supervisor.detail.supervisor',
+            ])
+            ->where('role', UserRole::Pasien->value)
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $term = '%'.$request->input('q').'%';
+                $query->where(function ($sub) use ($term) {
+                    $sub->where('name', 'like', $term)
+                        ->orWhere('phone', 'like', $term)
+                        ->orWhereHas('detail', function ($detail) use ($term) {
+                            $detail->where('address', 'like', $term)
+                                ->orWhere('nik', 'like', $term);
+                        });
+                });
+            })
+            ->latest()
+            ->get();
+
+        return view('pemda.patients', [
+            'patients' => $patients,
+            'search' => $request->input('q', ''),
+        ]);
+    })->name('pemda.patients');
+
     Route::get('/kader/pasien', function (Request $request) {
         abort_if(auth()->user()->role !== UserRole::Kader, 403);
 

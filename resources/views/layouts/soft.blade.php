@@ -11,14 +11,15 @@
         ],
         UserRole::Puskesmas->value => [
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
-            ['label' => 'Data Pasien', 'url' => '#', 'icon' => 'folder'],
+            ['label' => 'Data Kader', 'url' => route('puskesmas.kaders'), 'icon' => 'users'],
+            ['label' => 'Data Pasien', 'url' => route('puskesmas.patients'), 'icon' => 'folder'],
             ['label' => 'Skrining', 'url' => '#', 'icon' => 'screening'],
             ['label' => 'Berobat', 'url' => '#', 'icon' => 'berobat'],
             ['label' => 'Sembuh', 'url' => '#', 'icon' => 'sembuh'],
         ],
         UserRole::Kelurahan->value => [
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
-            ['label' => 'Data Pasien', 'url' => '#', 'icon' => 'folder'],
+            ['label' => 'Puskesmas Mitra', 'url' => route('kelurahan.puskesmas'), 'icon' => 'folder'],
             ['label' => 'Skrining', 'url' => '#', 'icon' => 'screening'],
             ['label' => 'Berobat', 'url' => '#', 'icon' => 'berobat'],
             ['label' => 'Sembuh', 'url' => '#', 'icon' => 'sembuh'],
@@ -26,9 +27,11 @@
         UserRole::Pemda->value => [
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
             ['label' => 'Verifikasi Pengguna', 'url' => route('pemda.verification'), 'icon' => 'verify'],
+            ['label' => 'Data Pasien', 'url' => route('pemda.patients'), 'icon' => 'folder'],
         ],
         UserRole::Kader->value => [
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
+            ['label' => 'Puskesmas Induk', 'url' => route('kader.puskesmas'), 'icon' => 'folder'],
             ['label' => 'Data Pasien', 'url' => route('kader.patients'), 'icon' => 'folder'],
             ['label' => 'Skrining', 'url' => '#', 'icon' => 'screening'],
             ['label' => 'Berobat', 'url' => '#', 'icon' => 'berobat'],
@@ -36,6 +39,9 @@
     ];
 
     $navItems = $navPresets[$role?->value ?? UserRole::Pasien->value] ?? reset($navPresets);
+    $activeNavItem = collect($navItems)
+        ->first(fn ($item) => ($item['url'] ?? '#') !== '#' && url()->current() === $item['url']);
+    $navTitle = $activeNavItem['label'] ?? ($navItems[0]['label'] ?? 'Dashboard');
 
     $profileNav = [
         'label' => $role === UserRole::Pemda ? 'Profil Pemda' : 'Profil Saya',
@@ -69,7 +75,7 @@
         <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur" navbar-scroll="true">
             <div class="container-fluid py-1 px-3">
                 <nav aria-label="breadcrumb">
-                    <h6 class="font-weight-bolder mb-0">{{ $navItems[0]['label'] ?? 'Dashboard' }}</h6>
+                    <h6 class="font-weight-bolder mb-0">{{ $navTitle }}</h6>
                 </nav>
                 <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
                     <div class="ms-md-auto pe-md-3 d-flex align-items-center"></div>

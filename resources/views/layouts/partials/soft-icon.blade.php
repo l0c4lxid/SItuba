@@ -38,6 +38,9 @@
     @case('profile')
         <i class="fa-solid fa-id-badge text-info"></i>
         @break
+    @case('users')
+        <i class="fa-solid fa-users text-primary"></i>
+        @break
     @default
         <i class="fa-regular fa-circle text-secondary"></i>
 @endswitch

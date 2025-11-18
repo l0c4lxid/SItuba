@@ -21,6 +21,13 @@ class RegisteredUserController extends Controller
     {
         $roleOptions = UserRole::options([UserRole::Pemda]);
 
+        $kelurahanOptions = User::query()
+            ->select('id', 'name')
+            ->where('role', UserRole::Kelurahan->value)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
         $puskesmasOptions = User::query()
             ->select('id', 'name')
             ->where('role', UserRole::Puskesmas->value)
@@ -37,6 +44,7 @@ class RegisteredUserController extends Controller
 
         return view('auth.register', [
             'roleOptions' => $roleOptions,
+            'kelurahanOptions' => $kelurahanOptions,
             'puskesmasOptions' => $puskesmasOptions,
             'kaderOptions' => $kaderOptions,
         ]);
@@ -61,6 +69,11 @@ class RegisteredUserController extends Controller
                 ->where('is_active', true);
         });
 
+        $activeKelurahanRule = Rule::exists('users', 'id')->where(function ($query) {
+            $query->where('role', UserRole::Kelurahan->value)
+                ->where('is_active', true);
+        });
+
         $activeKaderRule = Rule::exists('users', 'id')->where(function ($query) {
             $query->where('role', UserRole::Kader->value)
                 ->where('is_active', true);
@@ -74,6 +87,7 @@ class RegisteredUserController extends Controller
             UserRole::Puskesmas => [
                 'puskesmas_name' => ['required', 'string', 'max:255'],
                 'puskesmas_address' => ['required', 'string', 'max:255'],
+                'puskesmas_kelurahan_id' => ['required', $activeKelurahanRule],
             ],
             UserRole::Kader => [
                 'kader_puskesmas_id' => ['required', $activePuskesmasRule],
@@ -104,6 +118,7 @@ class RegisteredUserController extends Controller
             UserRole::Puskesmas => [
                 'organization' => $validated['puskesmas_name'],
                 'address' => $validated['puskesmas_address'],
+                'supervisor_id' => $validated['puskesmas_kelurahan_id'],
             ],
             UserRole::Kader => [
                 'supervisor_id' => $validated['kader_puskesmas_id'],

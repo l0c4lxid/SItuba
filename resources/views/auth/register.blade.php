@@ -81,6 +81,23 @@
                         <label for="puskesmas_name" class="form-label">Puskesmas</label>
                         <input type="text" class="form-control" id="puskesmas_name" name="puskesmas_name" value="{{ old('puskesmas_name') }}">
                     </div>
+                    <div class="col-md-6">
+                        <label for="puskesmas_kelurahan_id" class="form-label">Kelurahan Mitra</label>
+                        @if (($kelurahanOptions ?? collect())->isEmpty())
+                            <div class="alert alert-warning mb-0">
+                                Belum ada Kelurahan aktif. Hubungi admin untuk menambah data.
+                            </div>
+                        @else
+                            <select id="puskesmas_kelurahan_id" name="puskesmas_kelurahan_id" class="form-select">
+                                <option value="">Pilih kelurahan</option>
+                                @foreach ($kelurahanOptions as $kelurahan)
+                                    <option value="{{ $kelurahan->id }}" @selected(old('puskesmas_kelurahan_id') == $kelurahan->id)>
+                                        {{ $kelurahan->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        @endif
+                    </div>
                     <div class="col-12">
                         <label for="puskesmas_address" class="form-label">Alamat Puskesmas</label>
                         <input type="text" class="form-control" id="puskesmas_address" name="puskesmas_address" value="{{ old('puskesmas_address') }}">
