@@ -12,7 +12,7 @@
         <li class="nav-item">
           <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
+              <i class="fas fa-home text-primary text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">Dashboard</span>
           </a>
@@ -23,7 +23,7 @@
         <li class="nav-item">
           <a class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}" href="{{ route('profile.edit') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="ni ni-single-02 text-dark text-sm opacity-10"></i>
+              <i class="fas fa-user text-dark text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">Profile</span>
           </a>
@@ -33,7 +33,7 @@
                 @csrf
                 <a class="nav-link" href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();">
                     <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="ni ni-button-power text-danger text-sm opacity-10"></i>
+                        <i class="fas fa-sign-out-alt text-danger text-sm opacity-10"></i>
                     </div>
                     <span class="nav-link-text ms-1">Log Out</span>
                 </a>
@@ -41,4 +41,19 @@
         </li>
       </ul>
     </div>
+    <div class="sidenav-footer mx-3 ">
+        <div class="card card-background shadow-none card-background-mask-secondary" id="sidenavCard">
+          <div class="full-background" style="background-image: url('{{ asset('assets/img/curved-images/white-curved.jpg') }}')"></div>
+          <div class="card-body text-start p-3 w-100">
+            <div class="icon icon-shape icon-sm bg-white shadow text-center mb-3 d-flex align-items-center justify-content-center border-radius-md">
+              <i class="fas fa-question-circle text-dark text-gradient text-lg top-0" aria-hidden="true" id="sidenavCardIcon"></i>
+            </div>
+            <div class="docs-info">
+              <h6 class="text-white up mb-0">Butuh Bantuan?</h6>
+              <p class="text-xs font-weight-bold">Silakan cek dokumentasi kami</p>
+              <a href="#" target="_blank" class="btn btn-white btn-sm w-100 mb-0">Dokumentasi</a>
+            </div>
+          </div>
+        </div>
+      </div>
   </aside>

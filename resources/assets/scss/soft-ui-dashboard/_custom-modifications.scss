@@ -1,0 +1,158 @@
+// Custom Modern Green Theme for SIgap TBC
+
+// 0. Override Core Variables
+$primary: #2D9A7A !default;
+
+// 1. Define Modern Green Palette
+$health-green-dark: #2D9A7A;
+$health-green-light: #6DC3A8;
+$health-green-gradient: linear-gradient(310deg, $health-green-dark, $health-green-light);
+
+// 2. Override Sidenav Styles
+.sidenav {
+  // Apply the modern green gradient to the entire sidenav background
+  background: $health-green-gradient !important;
+
+  // Use Flexbox for a non-scrollable layout
+  display: flex;
+  flex-direction: column;
+
+  .navbar-collapse {
+    flex-grow: 1; // Allows the nav list to take up available space
+    margin-bottom: 1rem;
+  }
+
+  // Adjust brand text and icon color for contrast
+  .sidenav-header .navbar-brand {
+    .navbar-brand-img {
+      filter: brightness(0) invert(1); // Make logo white
+    }
+    .ms-1.font-weight-bold {
+      color: $white;
+    }
+  }
+
+  // Adjust the horizontal rule color
+  hr.horizontal.dark {
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0), white, rgba(255, 255, 255, 0)) !important;
+    background-color: transparent;
+    height: 1px;
+    opacity: 0.5;
+  }
+
+  // --- Nav Item Styling ---
+  .navbar-nav .nav-item {
+    .nav-link {
+      color: rgba(255, 255, 255, 0.8) !important;
+      padding: 0.75rem 1rem; // Adjusted padding
+      margin: 0.1rem 0.5rem; // Add horizontal margin
+      border-radius: $border-radius-md;
+      transition: all 0.2s ease-in-out;
+
+      .nav-link-text {
+        transition: all .3s ease;
+      }
+
+      // Style for the icon container
+      .icon {
+        background-color: transparent;
+        box-shadow: none !important;
+        transition: all 0.2s ease-in-out;
+        i, svg {
+          color: rgba(255, 255, 255, 0.8) !important;
+          text-shadow: none;
+          transition: all 0.2s ease-in-out;
+        }
+      }
+
+      // --- Hover State ---
+      &:hover, &:focus {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px); // Hover full animation
+        
+        .nav-link-text {
+          color: $white !important;
+        }
+        .icon {
+            i, svg {
+                color: $white !important;
+            }
+        }
+      }
+    }
+
+    // --- Active State ---
+    .nav-link.active {
+      background-color: transparent !important; // Remove background from the link itself
+      transform: none; // Reset transform on active
+      
+      .nav-link-text {
+        color: $white !important;
+        font-weight: 600;
+      }
+
+      .icon {
+        // Per user request: icon box is green, icon is white.
+        background: $health-green-gradient !important;
+        box-shadow: $box-shadow-md !important;
+        
+        i, svg {
+          color: $white !important; // White icon color
+        }
+      }
+    }
+  }
+
+  // Adjust heading in sidenav (e.g., "Account pages")
+  .nav-item .text-uppercase {
+    color: rgba(255, 255, 255, 0.6) !important;
+    font-weight: 600;
+  }
+
+  // Sidenav Footer
+  .sidenav-footer {
+    padding: 0 1rem 1rem;
+    .btn {
+        font-weight: 600;
+    }
+  }
+}
+
+// 3. Topnav and Content Area
+.navbar-main {
+  .breadcrumb-item.active {
+    color: $gray-700 !important;
+  }
+  .breadcrumb-item a {
+    color: $gray-500 !important;
+  }
+  .nav-link .fa-user {
+    color: $gray-600;
+  }
+}
+
+// Style for primary buttons to match the new theme
+.btn-primary, .btn.bg-gradient-primary {
+  background: $health-green-gradient !important;
+  border: none;
+}
+
+// Style for cards to give them a modern feel
+.card {
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.1) !important; // Softer shadow
+  border: none !important;
+}
+
+// Example of styling a specific card type, e.g., info cards
+.card .icon-shape {
+  background: $health-green-gradient !important;
+}
+
+.text-gradient.text-primary {
+  background-image: $health-green-gradient !important;
+}
+
+.progress-bar.bg-gradient-info {
+    background-image: $health-green-gradient !important;
+}
+
