@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\UserDetail;
 use Illuminate\Http\RedirectResponse;
@@ -36,13 +37,22 @@ class ProfileController extends Controller
             'phone' => $validated['phone'],
         ])->save();
 
+        $detailData = [
+            'address' => $validated['address'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+        ];
+
+        if ($user->role === UserRole::Pasien) {
+            $detailData['nik'] = $validated['nik'];
+            $detailData['organization'] = null;
+        } else {
+            $detailData['organization'] = $validated['organization'] ?? null;
+            $detailData['nik'] = $validated['nik'] ?? optional($user->detail)->nik;
+        }
+
         UserDetail::updateOrCreate(
             ['user_id' => $user->id],
-            [
-                'organization' => $validated['organization'] ?? null,
-                'address' => $validated['address'] ?? null,
-                'notes' => $validated['notes'] ?? null,
-            ],
+            $detailData,
         );
 
         if (! empty($validated['password'])) {

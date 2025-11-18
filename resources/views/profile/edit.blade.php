@@ -1,5 +1,9 @@
 @extends('layouts.soft')
 
+@php
+    $isPatient = $user->role === \App\Enums\UserRole::Pasien;
+@endphp
+
 @section('content')
     <form method="POST" action="{{ route('profile.update') }}" id="generalProfileForm" data-original-phone="{{ $user->phone }}">
         @csrf
@@ -23,10 +27,17 @@
                                 <label class="form-label">Nama Lengkap</label>
                                 <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}" required>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Instansi / Organisasi</label>
-                                <input type="text" name="organization" class="form-control" value="{{ old('organization', $user->detail->organization ?? '') }}">
-                            </div>
+                            @if ($isPatient)
+                                <div class="col-md-6">
+                                    <label class="form-label">NIK</label>
+                                    <input type="text" name="nik" class="form-control" value="{{ old('nik', $user->detail->nik ?? '') }}" required>
+                                </div>
+                            @else
+                                <div class="col-md-6">
+                                    <label class="form-label">Instansi / Organisasi</label>
+                                    <input type="text" name="organization" class="form-control" value="{{ old('organization', $user->detail->organization ?? '') }}">
+                                </div>
+                            @endif
                             <div class="col-md-6">
                                 <label class="form-label">Alamat Lengkap</label>
                                 <input type="text" name="address" class="form-control" value="{{ old('address', $user->detail->address ?? '') }}">
