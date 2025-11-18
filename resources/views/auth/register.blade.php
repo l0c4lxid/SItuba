@@ -43,15 +43,6 @@
                                 <p class="text-sm mb-0">Akun Pemda dibuat oleh admin. Silakan pilih peran lain jika ingin mendaftar.</p>
                             </div>
                             <div class="card-body">
-                                @if ($errors->any())
-                                    <div class="alert alert-danger">
-                                        <ul class="mb-0 ps-3">
-                                            @foreach ($errors->all() as $error)
-                                                <li>{{ $error }}</li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                @endif
                                 <form method="POST" action="{{ route('register') }}">
                                     @csrf
                                     <div class="row g-3">
@@ -209,6 +200,21 @@
     <script src="{{ asset('assets/js/plugins/perfect-scrollbar.min.js') }}"></script>
     <script src="{{ asset('assets/js/plugins/smooth-scrollbar.min.js') }}"></script>
     <script src="{{ asset('assets/js/soft-ui-dashboard.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            @if ($errors->any())
+                const errors = @json($errors->all());
+                if (errors.length) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Registrasi gagal',
+                        html: '<ul class="text-start mb-0">' + errors.map(msg => `<li>${msg}</li>`).join('') + '</ul>',
+                    });
+                }
+            @endif
+        });
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const roleSelect = document.getElementById('role');

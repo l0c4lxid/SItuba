@@ -26,7 +26,7 @@
                 </li>
             @endforeach
             <li class="nav-item d-md-none mt-3 px-3">
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}" data-confirm="Keluar dari aplikasi?" data-confirm-text="Ya, keluar">
                     @csrf
                     <button type="submit" class="btn btn-sm btn-danger w-100">
                         <i class="ni ni-button-power me-2"></i> Keluar

@@ -18,7 +18,7 @@
                                 </div>
                                 <button type="submit" class="btn btn-sm btn-outline-primary">Cari</button>
                             </form>
-                            <form method="POST" action="{{ route('pemda.verification.bulk-status') }}" class="d-flex align-items-center gap-2">
+                            <form method="POST" action="{{ route('pemda.verification.bulk-status') }}" class="d-flex align-items-center gap-2" data-confirm="Terapkan perubahan status massal?" data-confirm-text="Ya, terapkan">
                                 @csrf
                                 <select name="status" class="form-select form-select-sm">
                                     <option value="active">Aktifkan Semua</option>
@@ -28,12 +28,6 @@
                             </form>
                         </div>
                     </div>
-                    @if (session('status'))
-                        <div class="alert alert-success alert-dismissible fade show py-2 px-3 mt-3 mb-0" role="alert">
-                            <i class="fa fa-check-circle me-2"></i>{{ session('status') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    @endif
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -84,7 +78,7 @@
                                             </span>
                                         </td>
                                         <td class="align-middle text-center">
-                                            <form method="POST" action="{{ route('pemda.verification.status', $user) }}" class="d-inline-block">
+                                            <form method="POST" action="{{ route('pemda.verification.status', $user) }}" class="d-inline-block" data-confirm="Ubah status {{ $user->name }}?" data-confirm-text="Ya, ubah">
                                                 @csrf
                                                 <input type="hidden" name="status" value="{{ $user->is_active ? 'inactive' : 'active' }}">
                                                 <div class="d-inline-flex align-items-center bg-light rounded-pill px-3 py-1 gap-2">
@@ -110,3 +104,17 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            @if (session('status'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sukses',
+                    text: @json(session('status')),
+                });
+            @endif
+        });
+    </script>
+@endpush

@@ -83,7 +83,7 @@
                                 <i class="fa fa-chevron-down text-sm"></i>
                             </a>
                             <div class="dropdown-menu dropdown-menu-end px-2 py-2 me-sm-n4" aria-labelledby="profileDropdown">
-                                <form method="POST" action="{{ route('logout') }}">
+                                <form method="POST" action="{{ route('logout') }}" data-confirm="Keluar dari aplikasi?" data-confirm-text="Ya, keluar">
                                     @csrf
                                     <button type="submit" class="dropdown-item border-0 d-flex align-items-center gap-2">
                                         <i class="ni ni-button-power text-danger"></i> Keluar
@@ -107,6 +107,58 @@
     <script src="{{ asset('assets/js/plugins/perfect-scrollbar.min.js') }}"></script>
     <script src="{{ asset('assets/js/plugins/smooth-scrollbar.min.js') }}"></script>
     <script src="{{ asset('assets/js/soft-ui-dashboard.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('form[data-confirm]').forEach(form => {
+                form.addEventListener('submit', function (event) {
+                    if (form.dataset.confirmed === 'true') {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    const message = form.dataset.confirm ?? 'Lanjutkan aksi ini?';
+                    const confirmText = form.dataset.confirmText ?? 'Ya';
+                    const cancelText = form.dataset.cancelText ?? 'Batal';
+
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Konfirmasi',
+                        text: message,
+                        showCancelButton: true,
+                        confirmButtonText: confirmText,
+                        cancelButtonText: cancelText,
+                        reverseButtons: true,
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            form.dataset.confirmed = 'true';
+                            form.submit();
+                        }
+                    });
+                });
+            });
+
+            @if (session('status'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: @json(session('status')),
+                });
+            @endif
+
+            @if ($errors->any())
+                const errorMessages = @json($errors->all());
+                if (errorMessages.length) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Terjadi kesalahan',
+                        html: '<ul class="text-start mb-0">' + errorMessages.map(msg => `<li>${msg}</li>`).join('') + '</ul>',
+                    });
+                }
+            @endif
+        });
+    </script>
     @stack('scripts')
 </body>
 

@@ -39,20 +39,6 @@
                                     <p class="mb-0">Masukkan email dan password untuk masuk ke SIGAP TBC.</p>
                                 </div>
                                 <div class="card-body">
-                                    @if (session('status'))
-                                        <div class="alert alert-success text-sm" role="alert">
-                                            {{ session('status') }}
-                                        </div>
-                                    @endif
-                                    @if ($errors->any())
-                                        <div class="alert alert-danger text-sm">
-                                            <ul class="mb-0 ps-3">
-                                                @foreach ($errors->all() as $error)
-                                                    <li>{{ $error }}</li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    @endif
                                     <form method="POST" action="{{ route('login') }}" role="form">
                                         @csrf
                                         <label for="phone">Nomor HP</label>
@@ -109,6 +95,29 @@
     <script src="{{ asset('assets/js/plugins/perfect-scrollbar.min.js') }}"></script>
     <script src="{{ asset('assets/js/plugins/smooth-scrollbar.min.js') }}"></script>
     <script src="{{ asset('assets/js/soft-ui-dashboard.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            @if (session('status'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Informasi',
+                    text: @json(session('status')),
+                });
+            @endif
+
+            @if ($errors->any())
+                const errors = @json($errors->all());
+                if (errors.length) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Login gagal',
+                        html: '<ul class="text-start mb-0">' + errors.map(msg => `<li>${msg}</li>`).join('') + '</ul>',
+                    });
+                }
+            @endif
+        });
+    </script>
 </body>
 
 </html>
