@@ -104,8 +104,8 @@
                                 </a>
                                 <form method="POST" action="{{ route('logout') }}" data-confirm="Keluar dari aplikasi?" data-confirm-text="Ya, keluar">
                                     @csrf
-                                    <button type="submit" class="dropdown-item border-0 d-flex align-items-center gap-2">
-                                        <i class="ni ni-button-power text-danger"></i> Keluar
+                                    <button type="submit" class="dropdown-item border-0  text-dangerd-flex align-items-center gap-2">
+                                        <i class="fa-solid fa-arrow-right-from-bracket text-danger"></i> Keluar
                                     </button>
                                 </form>
                             </div>
