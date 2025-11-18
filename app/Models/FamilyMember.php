@@ -24,12 +24,18 @@ class FamilyMember extends Model
         'notes',
         'last_screening_answers',
         'last_screened_at',
+        'converted_user_id',
     ];
 
     protected $casts = [
         'last_screening_answers' => 'array',
         'last_screened_at' => 'datetime',
     ];
+
+    public function convertedUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'converted_user_id');
+    }
 
     public function patient(): BelongsTo
     {
