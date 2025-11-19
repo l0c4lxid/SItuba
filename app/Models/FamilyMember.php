@@ -19,6 +19,7 @@ class FamilyMember extends Model
         'patient_id',
         'name',
         'relation',
+        'nik',
         'phone',
         'screening_status',
         'notes',

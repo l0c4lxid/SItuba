@@ -82,6 +82,10 @@
                             <input type="text" name="relation" class="form-control" placeholder="Contoh: Istri / Anak">
                         </div>
                         <div class="mb-3">
+                            <label class="form-label">NIK</label>
+                            <input type="text" name="nik" class="form-control" placeholder="Opsional">
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label">Nomor HP</label>
                             <input type="text" name="phone" class="form-control" placeholder="Opsional">
                         </div>
@@ -112,7 +116,8 @@
                                     <tr>
                                         <td>
                                             <strong>{{ $member->name }}</strong>
-                                            <div class="text-xs text-muted">{{ $member->relation ?? '-' }} • {{ $member->phone ?? '-' }}</div>
+                                            <div class="text-xs text-muted">Relasi: {{ $member->relation ?? '-' }}</div>
+                                            <div class="text-xs text-muted">NIK: {{ $member->nik ?? '-' }} • {{ $member->phone ?? '-' }}</div>
                                         </td>
                                         <td>
                                             <span class="badge {{ $badges[$member->screening_status] ?? 'bg-secondary' }}">

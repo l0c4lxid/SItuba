@@ -448,11 +448,11 @@ Route::middleware('auth')->group(function () {
         ];
 
         $statusParam = $request->input('status');
+        $search = $request->input('q', '');
 
         if ($kaderIds->isEmpty()) {
             $counts = collect(array_fill_keys(array_keys($statuses), 0));
             $treatments = collect();
-            $eligiblePatients = collect();
         } else {
             $baseQuery = PatientTreatment::query()
                 ->with([
@@ -470,22 +470,25 @@ Route::middleware('auth')->group(function () {
                 $counts[$status] = (clone $baseQuery)->where('status', $status)->count();
             }
 
-            $treatments = $baseQuery
+            $treatmentsQuery = (clone $baseQuery)
                 ->when($statusParam && array_key_exists($statusParam, $statuses), function ($query) use ($statusParam) {
                     $query->where('status', $statusParam);
                 })
-                ->latest()
-                ->get();
 
-            $eligiblePatients = User::query()
-                ->with(['detail', 'detail.supervisor'])
-                ->where('role', UserRole::Pasien->value)
-                ->whereHas('detail', function ($detail) use ($kaderIds) {
-                    $detail->whereIn('supervisor_id', $kaderIds);
-                })
-                ->whereDoesntHave('treatments')
-                ->has('screenings')
-                ->orderBy('name')
+                ->when($search !== '', function ($query) use ($search) {
+                    $term = '%' . $search . '%';
+                    $query->whereHas('patient', function ($patient) use ($term) {
+                        $patient->where('name', 'like', $term)
+                            ->orWhere('phone', 'like', $term)
+                            ->orWhereHas('detail', function ($detail) use ($term) {
+                                $detail->where('address', 'like', $term)
+                                    ->orWhere('nik', 'like', $term);
+                            });
+                    });
+                });
+
+            $treatments = $treatmentsQuery
+                ->latest()
                 ->get();
         }
 
@@ -494,8 +497,8 @@ Route::middleware('auth')->group(function () {
             'statuses' => $statuses,
             'counts' => $counts,
             'activeStatus' => $statusParam,
-            'eligiblePatients' => $eligiblePatients,
             'familyStatuses' => $familyStatuses,
+            'search' => $search,
         ]);
     })->name('puskesmas.treatment');
 
@@ -783,6 +786,7 @@ Route::middleware('auth')->group(function () {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'relation' => ['nullable', 'string', 'max:100'],
+            'nik' => ['nullable', 'string', 'max:30'],
             'phone' => ['nullable', 'string', 'max:25'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
@@ -949,6 +953,7 @@ Route::middleware('auth')->group(function () {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'relation' => ['nullable', 'string', 'max:100'],
+            'nik' => ['nullable', 'string', 'max:30'],
             'phone' => ['nullable', 'string', 'max:25'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);

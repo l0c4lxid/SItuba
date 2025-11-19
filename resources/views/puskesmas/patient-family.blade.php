@@ -47,6 +47,7 @@
                                     <td>
                                         <strong>{{ $member->name }}</strong>
                                         <div class="text-xs text-muted">Relasi: {{ $member->relation ?? '-' }}</div>
+                                        <div class="text-xs text-muted">NIK: {{ $member->nik ?? '-' }}</div>
                                     </td>
                                     <td>
                                         <span class="text-xs text-muted">{{ $member->phone ?? '-' }}</span>
