@@ -8,6 +8,13 @@ use App\Models\PatientScreening;
 use App\Models\FamilyMember;
 use App\Models\PatientTreatment;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Pemda\ProfileController as PemdaProfileController;
 
 if (!function_exists('ensureFamilyTreatment')) {
     function ensureFamilyTreatment(User $patient, string $status = 'contacted', ?string $nextFollowUp = null, ?string $notes = null): void
@@ -51,11 +58,29 @@ if (!function_exists('ensureFamilyTreatment')) {
         }
     }
 }
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Pemda\ProfileController as PemdaProfileController;
 
+if (!function_exists('sigapMaterialDownloads')) {
+    function sigapMaterialDownloads(): \Illuminate\Support\Collection
+    {
+        $pdfDirectory = public_path('pdf');
+
+        if (!File::exists($pdfDirectory)) {
+            return collect();
+        }
+
+        return collect(File::files($pdfDirectory))
+            ->filter(fn($file) => strtolower($file->getExtension()) === 'pdf')
+            ->sortByDesc(fn($file) => $file->getMTime())
+            ->values()
+            ->map(fn($file) => [
+                'name' => Str::headline(str_replace(['_', '-'], ' ', pathinfo($file->getFilename(), PATHINFO_FILENAME))),
+                'filename' => $file->getFilename(),
+                'url' => asset('pdf/' . $file->getFilename()),
+                'updated_at' => Carbon::createFromTimestamp($file->getMTime()),
+                'size' => max(1, round($file->getSize() / 1024)),
+            ]);
+    }
+}
 Route::redirect('/', '/login')->name('home');
 
 Route::middleware('auth')->group(function () {
@@ -917,6 +942,22 @@ Route::middleware('auth')->group(function () {
             'puskesmas' => $puskesmas,
         ]);
     })->name('kelurahan.patients.show');
+
+    Route::get('/kader/materi', function (Request $request) {
+        abort_if($request->user()->role !== UserRole::Kader, 403);
+
+        return view('kader.materi', [
+            'downloads' => sigapMaterialDownloads(),
+        ]);
+    })->name('kader.materi');
+
+    Route::get('/pasien/materi', function (Request $request) {
+        abort_if($request->user()->role !== UserRole::Pasien, 403);
+
+        return view('kader.materi', [
+            'downloads' => sigapMaterialDownloads(),
+        ]);
+    })->name('patient.materi');
 
     Route::get('/kader/puskesmas', function (Request $request) {
         abort_if($request->user()->role !== UserRole::Kader, 403);

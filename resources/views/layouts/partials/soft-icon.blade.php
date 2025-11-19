@@ -32,6 +32,9 @@
     @case('users')
         <i class="fa-solid fa-users {{ $stateClass }}"></i>
         @break
+    @case('materi')
+        <i class="fa-solid fa-book-open {{ $stateClass }}"></i>
+        @break
     @default
         <i class="fa-solid fa-circle-info {{ $stateClass }}"></i>
 @endswitch

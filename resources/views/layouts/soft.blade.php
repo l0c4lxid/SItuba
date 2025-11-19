@@ -9,6 +9,7 @@
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
             ['label' => 'Skrining', 'url' => route('patient.screening'), 'icon' => 'screening'],
             ['label' => 'Anggota Keluarga', 'url' => route('patient.family'), 'icon' => 'anggota'],
+            ['label' => 'Materi', 'url' => route('patient.materi'), 'icon' => 'materi'],
         ],
         UserRole::Puskesmas->value => [
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
@@ -35,6 +36,7 @@
             ['label' => 'Puskesmas Induk', 'url' => route('kader.puskesmas'), 'icon' => 'folder'],
             ['label' => 'Data Pasien', 'url' => route('kader.patients'), 'icon' => 'folder'],
             ['label' => 'Skrining', 'url' => route('kader.screening.index'), 'icon' => 'screening'],
+            ['label' => 'Materi', 'url' => route('kader.materi'), 'icon' => 'materi'],
         ],
     ];
 
