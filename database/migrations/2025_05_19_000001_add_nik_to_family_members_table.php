@@ -11,8 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasTable('family_members')) {
+            return;
+        }
+
         Schema::table('family_members', function (Blueprint $table) {
-            $table->string('nik', 30)->nullable()->after('relation');
+            if (! Schema::hasColumn('family_members', 'nik')) {
+                $table->string('nik', 30)->nullable()->after('relation');
+            }
         });
     }
 
@@ -21,8 +27,14 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (! Schema::hasTable('family_members')) {
+            return;
+        }
+
         Schema::table('family_members', function (Blueprint $table) {
-            $table->dropColumn('nik');
+            if (Schema::hasColumn('family_members', 'nik')) {
+                $table->dropColumn('nik');
+            }
         });
     }
 };
