@@ -1,9 +1,11 @@
 @php
     $brandName = config('app.name', 'SIGAP TBC');
 @endphp
-<aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3" id="sidenav-main">
+<aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3"
+    id="sidenav-main">
     <div class="sidenav-header">
-        <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none" id="iconSidenav"></i>
+        <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none"
+            id="iconSidenav"></i>
         <a class="navbar-brand m-0" href="{{ route('dashboard') }}">
             <img src="{{ asset('assets/img/logo-ct-dark.png') }}" class="navbar-brand-img h-100" alt="logo">
             <span class="ms-1 font-weight-bold">{{ $brandName }}</span>
@@ -18,14 +20,15 @@
                 @endphp
                 <li class="nav-item">
                     <a class="nav-link {{ $isActive ? 'active' : '' }}" href="{{ $item['url'] }}">
-                        <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <div
+                            class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                             @include('layouts.partials.soft-icon', ['icon' => $item['icon'] ?? 'default', 'active' => $isActive])
                         </div>
                         <span class="nav-link-text ms-1">{{ $item['label'] }}</span>
                     </a>
                 </li>
             @endforeach
-            @if (! empty($profileNav))
+            @if (!empty($profileNav))
                 <li class="nav-item d-md-none px-3 mt-3">
                     <a class="btn btn-sm btn-outline-primary w-100" href="{{ $profileNav['url'] }}">
                         <i class="fa-solid fa-id-badge me-2"></i>{{ $profileNav['label'] }}
@@ -33,7 +36,8 @@
                 </li>
             @endif
             <li class="nav-item d-md-none mt-3 px-3">
-                <form method="POST" action="{{ route('logout') }}" data-confirm="Keluar dari aplikasi?" data-confirm-text="Ya, keluar">
+                <form method="POST" action="{{ route('logout') }}" data-confirm="Keluar dari aplikasi?"
+                    data-confirm-text="Ya, keluar">
                     @csrf
                     <button type="submit" class="btn btn-sm btn-danger w-100">
                         <i class="fa-solid fa-power-off me-2"></i> Keluar
@@ -51,6 +55,7 @@
         transition: transform 0.3s ease;
         touch-action: none;
         overscroll-behavior: contain;
+        background: #22c55e;
     }
 
     #sidenav-collapse-main {
@@ -77,7 +82,7 @@
             left: 0;
             width: 260px;
             transform: translateX(-100%);
-            background-color: #fff;
+            background-color: #2f6640;
             z-index: 1100;
         }
 
