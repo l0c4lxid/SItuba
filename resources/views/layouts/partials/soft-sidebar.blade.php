@@ -33,7 +33,9 @@
         <p class="soft-sidebar__title">Navigasi utama</p>
         @foreach ($navItems as $item)
             @php
-                $isActive = $item['url'] !== '#' && url()->current() === $item['url'];
+                $currentUrl = url()->current();
+                $base = rtrim($item['url'] ?? '#', '/');
+                $isActive = $base !== '#' && ($currentUrl === ($item['url'] ?? '') || str_starts_with($currentUrl, $base . '/'));
                 $description = $navDescriptions[$item['icon'] ?? ''] ?? 'Lihat detail dan tindak lanjut';
             @endphp
             <a class="soft-sidebar__link {{ $isActive ? 'is-active' : '' }}" href="{{ $item['url'] }}"

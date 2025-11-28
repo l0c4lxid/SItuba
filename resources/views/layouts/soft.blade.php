@@ -46,8 +46,15 @@
     ];
 
     $navItems = $navPresets[$role?->value ?? UserRole::Pasien->value] ?? reset($navPresets);
+    $currentUrl = url()->current();
     $activeNavItem = collect($navItems)
-        ->first(fn($item) => ($item['url'] ?? '#') !== '#' && url()->current() === $item['url']);
+        ->first(function ($item) use ($currentUrl) {
+            if (($item['url'] ?? '#') === '#') {
+                return false;
+            }
+            $base = rtrim($item['url'], '/');
+            return $currentUrl === $item['url'] || str_starts_with($currentUrl, $base . '/');
+        });
     $navTitle = $activeNavItem['label'] ?? ($navItems[0]['label'] ?? 'Dashboard');
 
     $profileNav = [
