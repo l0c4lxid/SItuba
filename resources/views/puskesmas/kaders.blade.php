@@ -31,9 +31,12 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $firstNumber = method_exists($kaders, 'firstItem') ? $kaders->firstItem() : null;
+                                @endphp
                                 @forelse ($kaders as $kader)
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $firstNumber ? $firstNumber + $loop->index : $loop->iteration }}</td>
                                         <td>
                                             <h6 class="mb-0 text-sm">{{ $kader->name }}</h6>
                                             <p class="text-xs text-muted mb-0">{{ $kader->detail->organization ?? 'Kader' }}</p>
@@ -62,6 +65,22 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    @php
+                        $hasPagination = method_exists($kaders, 'firstItem');
+                        $from = $hasPagination ? $kaders->firstItem() : ($kaders->count() ? 1 : 0);
+                        $to = $hasPagination ? $kaders->lastItem() : $kaders->count();
+                        $total = $hasPagination ? $kaders->total() : $kaders->count();
+                    @endphp
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+                        <p class="text-sm text-muted mb-0">
+                            Menampilkan <span class="fw-semibold">{{ $from }}</span> - <span class="fw-semibold">{{ $to }}</span> dari <span class="fw-semibold">{{ $total }}</span> kader
+                        </p>
+                        @if ($hasPagination)
+                            <div class="mb-0">
+                                {{ $kaders->withQueryString()->onEachSide(1)->links('pagination::bootstrap-5') }}
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

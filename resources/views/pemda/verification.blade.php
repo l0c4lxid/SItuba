@@ -16,7 +16,7 @@
                                     <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
                                     <input type="text" name="q" class="form-control" placeholder="Cari nama / nomor HP / instansi" value="{{ $search ?? '' }}">
                                 </div>
-                                <button type="submit" class="btn btn-sm btn-outline-primary">Cari</button>
+                                <button type="submit" class="btn btn-sm btn-primary px-3"><i class="fa fa-search me-1"></i> Cari</button>
                             </form>
                             <form method="POST" action="{{ route('pemda.verification.bulk-status') }}" class="d-flex align-items-center gap-2" data-confirm="Terapkan perubahan status massal?" data-confirm-text="Ya, terapkan">
                                 @csrf
@@ -24,14 +24,14 @@
                                     <option value="active">Aktifkan Semua</option>
                                     <option value="inactive">Nonaktifkan Semua</option>
                                 </select>
-                                <button type="submit" class="btn btn-sm btn-dark">Terapkan</button>
+                                <button type="submit" class="btn btn-sm btn-dark px-3"><i class="fa fa-bolt me-1"></i> Terapkan</button>
                             </form>
                         </div>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table align-items-center mb-0">
+                        <table class="table table-hover align-items-center mb-0">
                             <thead>
                                 <tr>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama</th>
@@ -95,6 +95,22 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    @php
+                        $hasPagination = method_exists($records, 'firstItem');
+                        $from = $hasPagination ? $records->firstItem() : ($records->count() ? 1 : 0);
+                        $to = $hasPagination ? $records->lastItem() : $records->count();
+                        $total = $hasPagination ? $records->total() : $records->count();
+                    @endphp
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+                        <p class="text-sm text-muted mb-0">
+                            Menampilkan <span class="fw-semibold">{{ $from }}</span> - <span class="fw-semibold">{{ $to }}</span> dari <span class="fw-semibold">{{ $total }}</span> pengguna
+                        </p>
+                        @if ($hasPagination)
+                            <div class="mb-0">
+                                {{ $records->withQueryString()->onEachSide(1)->links('pagination::bootstrap-5') }}
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

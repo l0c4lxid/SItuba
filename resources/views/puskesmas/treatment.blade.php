@@ -49,6 +49,9 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $firstNumber = $treatments->firstItem();
+                                @endphp
                                 @forelse ($treatments as $treatment)
                                     @php
                                         $patient = $treatment->patient;
@@ -56,7 +59,7 @@
                                         $positiveCount = collect($latestScreening->answers ?? [])->filter(fn ($answer) => $answer === 'ya')->count();
                                     @endphp
                                     <tr class="align-middle">
-                                        <td class="text-center fw-semibold">{{ $loop->iteration }}</td>
+                                        <td class="text-center fw-semibold">{{ $firstNumber ? $firstNumber + $loop->index : $loop->iteration }}</td>
                                         <td>
                                             <h6 class="mb-0 text-sm">{{ $patient->name }}</h6>
                                             <p class="text-xs text-muted mb-0">{{ $patient->phone }}</p>
@@ -267,6 +270,22 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    @php
+                        $hasPagination = method_exists($treatments, 'firstItem');
+                        $from = $hasPagination ? $treatments->firstItem() : ($treatments->count() ? 1 : 0);
+                        $to = $hasPagination ? $treatments->lastItem() : $treatments->count();
+                        $total = $hasPagination ? $treatments->total() : $treatments->count();
+                    @endphp
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+                        <p class="text-sm text-muted mb-0">
+                            Menampilkan <span class="fw-semibold">{{ $from }}</span> - <span class="fw-semibold">{{ $to }}</span> dari <span class="fw-semibold">{{ $total }}</span> pasien
+                        </p>
+                        @if ($hasPagination)
+                            <div class="mb-0">
+                                {{ $treatments->withQueryString()->onEachSide(1)->links('pagination::bootstrap-5') }}
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

@@ -149,7 +149,7 @@
                     </div>
 
                     <div class="mt-4">
-                        {{ $posts->links() }}
+                        {{ $posts->onEachSide(1)->links('pagination::bootstrap-5') }}
                     </div>
                 </div>
             </div>

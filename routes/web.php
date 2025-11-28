@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use App\Http\Controllers\Pemda\ProfileController as PemdaProfileController;
 use App\Http\Controllers\NewsController;
 
@@ -507,7 +508,7 @@ Route::middleware('auth')->group(function () {
                 });
             })
             ->latest()
-            ->get();
+            ->paginate(10);
 
         return view('pemda.verification', [
             'records' => $pendingUsers,
@@ -549,6 +550,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/puskesmas/pasien', function (Request $request) {
         abort_if($request->user()->role !== UserRole::Puskesmas, 403);
 
+        $perPage = 10;
         $kaderIds = User::query()
             ->where('role', UserRole::Kader->value)
             ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $request->user()->id))
@@ -556,7 +558,10 @@ Route::middleware('auth')->group(function () {
             ->all();
 
         $patients = empty($kaderIds)
-            ? collect()
+            ? new LengthAwarePaginator([], 0, $perPage, 1, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ])
             : User::query()
                 ->with(['detail', 'detail.supervisor'])
                 ->where('role', UserRole::Pasien->value)
@@ -573,7 +578,8 @@ Route::middleware('auth')->group(function () {
                     });
                 })
                 ->latest()
-                ->get();
+                ->paginate($perPage)
+                ->withQueryString();
 
         return view('puskesmas.patients', [
             'patients' => $patients,
@@ -620,13 +626,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/puskesmas/skrining', function (Request $request) {
         abort_if($request->user()->role !== UserRole::Puskesmas, 403);
 
+        $perPage = 10;
         $kaderIds = User::query()
             ->where('role', UserRole::Kader->value)
             ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $request->user()->id))
             ->pluck('id');
 
         $patients = $kaderIds->isEmpty()
-            ? collect()
+            ? new LengthAwarePaginator([], 0, $perPage, 1, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ])
             : User::query()
                 ->with([
                     'detail',
@@ -647,7 +657,8 @@ Route::middleware('auth')->group(function () {
                     });
                 })
                 ->latest()
-                ->get();
+                ->paginate($perPage)
+                ->withQueryString();
 
         return view('puskesmas.screenings', [
             'patients' => $patients,
@@ -658,6 +669,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/puskesmas/berobat', function (Request $request) {
         abort_if($request->user()->role !== UserRole::Puskesmas, 403);
 
+        $perPage = 10;
         $kaderIds = User::query()
             ->where('role', UserRole::Kader->value)
             ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $request->user()->id))
@@ -682,7 +694,10 @@ Route::middleware('auth')->group(function () {
 
         if ($kaderIds->isEmpty()) {
             $counts = collect(array_fill_keys(array_keys($statuses), 0));
-            $treatments = collect();
+            $treatments = new LengthAwarePaginator([], 0, $perPage, 1, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]);
         } else {
             $baseQuery = PatientTreatment::query()
                 ->with([
@@ -719,7 +734,8 @@ Route::middleware('auth')->group(function () {
 
             $treatments = $treatmentsQuery
                 ->latest()
-                ->get();
+                ->paginate($perPage)
+                ->withQueryString();
         }
 
         return view('puskesmas.treatment', [
@@ -791,6 +807,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/puskesmas/kader', function (Request $request) {
         abort_if($request->user()->role !== UserRole::Puskesmas, 403);
 
+        $perPage = 10;
+
         $kaders = User::query()
             ->with('detail')
             ->where('role', UserRole::Kader->value)
@@ -804,7 +822,8 @@ Route::middleware('auth')->group(function () {
                 });
             })
             ->latest()
-            ->get();
+            ->paginate($perPage)
+            ->withQueryString();
 
         return view('puskesmas.kaders', [
             'kaders' => $kaders,
@@ -830,7 +849,8 @@ Route::middleware('auth')->group(function () {
                 });
             })
             ->latest()
-            ->get();
+            ->paginate(10)
+            ->withQueryString();
 
         return view('kelurahan.puskesmas', [
             'puskesmasList' => $puskesmasList,
@@ -842,14 +862,19 @@ Route::middleware('auth')->group(function () {
         abort_if($request->user()->role !== UserRole::Kelurahan, 403);
 
         $kelurahan = $request->user();
+        $perPage = 10;
         $puskesmasIds = User::query()
             ->where('role', UserRole::Puskesmas->value)
             ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $kelurahan->id))
             ->pluck('id');
 
-        $kaders = $puskesmasIds->isEmpty()
-            ? collect()
-            : User::query()
+        if ($puskesmasIds->isEmpty()) {
+            $kaders = new LengthAwarePaginator([], 0, $perPage, 1, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]);
+        } else {
+            $kaders = User::query()
                 ->with(['detail.supervisor'])
                 ->where('role', UserRole::Kader->value)
                 ->whereHas('detail', fn($detail) => $detail->whereIn('supervisor_id', $puskesmasIds))
@@ -862,7 +887,9 @@ Route::middleware('auth')->group(function () {
                     });
                 })
                 ->latest()
-                ->get();
+                ->paginate($perPage)
+                ->withQueryString();
+        }
 
         return view('kelurahan.kaders', [
             'kaders' => $kaders,
@@ -893,19 +920,14 @@ Route::middleware('auth')->group(function () {
         abort_if($request->user()->role !== UserRole::Kelurahan, 403);
 
         $kelurahan = $request->user();
+        $perPage = 10;
         $puskesmasIds = User::query()
             ->where('role', UserRole::Puskesmas->value)
             ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $kelurahan->id))
             ->pluck('id');
 
-        $patients = $puskesmasIds->isEmpty()
-            ? collect()
-            : User::query()
-                ->with([
-                    'detail.supervisor.detail.supervisor',
-                    'screenings' => fn($query) => $query->latest()->limit(1),
-                    'treatments' => fn($query) => $query->latest()->limit(1),
-                ])
+        $filterPatients = function ($query) use ($puskesmasIds, $request) {
+            return $query
                 ->where('role', UserRole::Pasien->value)
                 ->whereHas('detail.supervisor.detail', fn($detail) => $detail->whereIn('supervisor_id', $puskesmasIds))
                 ->when($request->filled('q'), function ($query) use ($request) {
@@ -915,15 +937,35 @@ Route::middleware('auth')->group(function () {
                             ->orWhere('phone', 'like', $term)
                             ->orWhereHas('detail', fn($detail) => $detail->where('address', 'like', $term));
                     });
-                })
-                ->latest()
-                ->get();
+                });
+        };
 
-        $stats = [
-            'total' => $patients->count(),
-            'screened' => $patients->filter(fn($patient) => $patient->screenings->isNotEmpty())->count(),
-            'unscreened' => $patients->filter(fn($patient) => $patient->screenings->isEmpty())->count(),
-        ];
+        if ($puskesmasIds->isEmpty()) {
+            $patients = new LengthAwarePaginator([], 0, $perPage, 1, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]);
+            $stats = ['total' => 0, 'screened' => 0, 'unscreened' => 0];
+        } else {
+            $patientsQuery = $filterPatients(User::query())
+                ->with([
+                    'detail.supervisor.detail.supervisor',
+                    'screenings' => fn($query) => $query->latest()->limit(1),
+                    'treatments' => fn($query) => $query->latest()->limit(1),
+                ])
+                ->latest();
+
+            $patients = $patientsQuery->paginate($perPage)->withQueryString();
+
+            $statsQuery = $filterPatients(User::query());
+            $total = (clone $statsQuery)->count();
+            $screened = (clone $statsQuery)->whereHas('screenings')->count();
+            $stats = [
+                'total' => $total,
+                'screened' => $screened,
+                'unscreened' => max(0, $total - $screened),
+            ];
+        }
 
         return view('kelurahan.patients', [
             'patients' => $patients,
@@ -1120,6 +1162,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/kader/pasien', function (Request $request) {
         abort_if(auth()->user()->role !== UserRole::Kader, 403);
 
+        $perPage = 10;
+
         $patients = User::query()
             ->with(['detail', 'screenings' => fn($query) => $query->latest()])
             ->where('role', UserRole::Pasien->value)
@@ -1136,7 +1180,8 @@ Route::middleware('auth')->group(function () {
                 });
             })
             ->latest()
-            ->get();
+            ->paginate($perPage)
+            ->withQueryString();
 
         return view('kader.patients', [
             'patients' => $patients,
@@ -1147,6 +1192,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/kader/skrining', function (Request $request) {
         abort_if(auth()->user()->role !== UserRole::Kader, 403);
 
+        $perPage = 10;
         $patientsQuery = User::query()
             ->with([
                 'detail.supervisor.detail.supervisor',
@@ -1175,7 +1221,7 @@ Route::middleware('auth')->group(function () {
             $patientsQuery->has('screenings');
         }
 
-        $patients = $patientsQuery->latest()->get();
+        $patients = $patientsQuery->latest()->paginate($perPage)->withQueryString();
 
         return view('kader.screening-index', [
             'patients' => $patients,

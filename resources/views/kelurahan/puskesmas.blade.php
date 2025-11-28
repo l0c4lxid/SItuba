@@ -31,9 +31,12 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $firstNumber = $puskesmasList->firstItem();
+                                @endphp
                                 @forelse ($puskesmasList as $puskesmas)
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $firstNumber ? $firstNumber + $loop->index : $loop->iteration }}</td>
                                         <td>
                                             <h6 class="mb-0 text-sm">{{ $puskesmas->name }}</h6>
                                             <p class="text-xs text-muted mb-0">{{ $puskesmas->detail->organization ?? 'Puskesmas' }}</p>
@@ -62,6 +65,22 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    @php
+                        $hasPagination = method_exists($puskesmasList, 'firstItem');
+                        $from = $hasPagination ? $puskesmasList->firstItem() : ($puskesmasList->count() ? 1 : 0);
+                        $to = $hasPagination ? $puskesmasList->lastItem() : $puskesmasList->count();
+                        $total = $hasPagination ? $puskesmasList->total() : $puskesmasList->count();
+                    @endphp
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+                        <p class="text-sm text-muted mb-0">
+                            Menampilkan <span class="fw-semibold">{{ $from }}</span> - <span class="fw-semibold">{{ $to }}</span> dari <span class="fw-semibold">{{ $total }}</span> puskesmas
+                        </p>
+                        @if ($hasPagination)
+                            <div class="mb-0">
+                                {{ $puskesmasList->withQueryString()->onEachSide(1)->links('pagination::bootstrap-5') }}
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
