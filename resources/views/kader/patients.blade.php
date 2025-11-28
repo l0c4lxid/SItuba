@@ -70,25 +70,19 @@
                                             <span class="text-xs text-muted">{{ $patient->created_at->format('d M Y') }}</span>
                                         </td>
                                         <td class="text-center">
-                                            <div class="d-flex flex-column gap-2 align-items-center">
-                                                <div class="btn-group btn-group-sm" role="group">
-                                                    <a href="{{ route('kader.patients.show', $patient) }}" class="btn btn-outline-secondary">Detail</a>
-                                                    @if ($patient->screenings->isEmpty())
-                                                        <a href="{{ route('kader.patients.screening', $patient) }}" class="btn btn-success text-white">Skrining</a>
-                                                    @else
-                                                        <span class="btn btn-success text-white" style="pointer-events: none;">Sudah skrining</span>
-                                                    @endif
-                                                </div>
-                                                <form method="POST" action="{{ route('kader.patients.status', $patient) }}" data-confirm="Ubah status akun {{ $patient->name }}?" data-confirm-text="Ya, ubah" class="d-inline-block">
+                                            <div class="d-flex flex-nowrap align-items-center justify-content-center gap-1">
+                                                <a href="{{ route('kader.patients.show', $patient) }}" class="btn btn-sm btn-outline-secondary px-2">Detail</a>
+                                                @if ($patient->screenings->isEmpty())
+                                                    <a href="{{ route('kader.patients.screening', $patient) }}" class="btn btn-sm btn-success text-white px-2">Skrining</a>
+                                                @else
+                                                    <span class="btn btn-sm btn-success text-white px-2" style="pointer-events: none;">Sudah</span>
+                                                @endif
+                                                <form method="POST" action="{{ route('kader.patients.status', $patient) }}" data-confirm="Ubah status akun {{ $patient->name }}?" data-confirm-text="Ya, ubah" class="d-inline m-0">
                                                     @csrf
                                                     <input type="hidden" name="status" value="{{ $patient->is_active ? 'inactive' : 'active' }}">
-                                                    <div class="badge rounded-pill bg-light border d-inline-flex align-items-center gap-2 px-3 py-2">
-                                                        <span class="text-xs text-muted {{ $patient->is_active ? '' : 'fw-bold text-danger' }}">Nonaktif</span>
-                                                        <div class="form-check form-switch m-0">
-                                                            <input class="form-check-input" type="checkbox" onchange="this.form.submit()" {{ $patient->is_active ? 'checked' : '' }}>
-                                                        </div>
-                                                        <span class="text-xs text-muted {{ $patient->is_active ? 'fw-bold text-success' : '' }}">Aktif</span>
-                                                    </div>
+                                                    <button type="submit" class="btn btn-sm {{ $patient->is_active ? 'btn-outline-danger' : 'btn-outline-success' }} px-2">
+                                                        {{ $patient->is_active ? 'Nonaktif' : 'Aktifkan' }}
+                                                    </button>
                                                 </form>
                                             </div>
                                         </td>
