@@ -2,9 +2,9 @@
 
 @section('content')
     <div class="row">
-        <div class="col-lg-6">
+        <div class="col-12">
             <div class="card shadow-sm border-0">
-                <div class="card-header pb-1 d-flex align-items-center gap-2">
+                <div class="card-header pb-2 d-flex align-items-center gap-3">
                     <div class="icon icon-shape bg-gradient-primary shadow text-center border-radius-md">
                         <i class="fa-solid fa-user-plus text-white"></i>
                     </div>
@@ -29,7 +29,7 @@
                             <input type="text" name="nik" class="form-control" value="{{ old('nik') }}" required>
                         </div>
                         <div class="mb-4">
-                            <label class="form-label">Alamat</label>
+                            <label class="form-label">Alamat Lengkap</label>
                             <textarea name="address" rows="3" class="form-control" required>{{ old('address') }}</textarea>
                         </div>
                         <p class="text-xs text-muted mb-3">
