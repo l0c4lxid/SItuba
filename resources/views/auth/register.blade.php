@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('assets/img/apple-icon.png') }}">
     <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}">
-    <title>{{ config('app.name', 'SIGAP TBC') }} &mdash; Registrasi</title>
+    <title>{{ config('app.name', 'SITUBA') }} &mdash; Registrasi</title>
     <link href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,800" rel="stylesheet" />
     <link href="{{ asset('assets/css/nucleo-icons.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/css/nucleo-svg.css') }}" rel="stylesheet" />
@@ -17,7 +17,7 @@
     <nav class="navbar navbar-expand-lg position-absolute top-0 z-index-3 w-100 shadow-none my-3 navbar-transparent mt-4">
         <div class="container">
             <a class="navbar-brand font-weight-bolder ms-lg-0 ms-3 text-white" href="{{ url('/') }}">
-                {{ config('app.name', 'SIGAP TBC') }}
+                {{ config('app.name', 'SITUBA') }}
             </a>
         </div>
     </nav>
@@ -39,7 +39,7 @@
                     <div class="col-xl-9 col-lg-10 col-md-11">
                         <div class="card z-index-0">
                             <div class="card-header text-center pt-4">
-                                <h5>Form Registrasi SIGAP TBC</h5>
+                                <h5>Form Registrasi SITUBA</h5>
                                 <p class="text-sm mb-0">Akun Pemda dibuat oleh admin. Silakan pilih peran lain jika ingin mendaftar.</p>
                             </div>
                             <div class="card-body">
@@ -174,7 +174,7 @@
 
                                     <div class="form-check form-switch mt-4">
                                         <input class="form-check-input" type="checkbox" id="terms" checked disabled>
-                                        <label class="form-check-label" for="terms">Dengan mendaftar saya menyetujui kebijakan privasi SIGAP TBC.</label>
+                                        <label class="form-check-label" for="terms">Dengan mendaftar saya menyetujui kebijakan privasi SITUBA.</label>
                                     </div>
                                     <div class="text-center">
                                         <button type="submit" class="btn bg-gradient-dark w-100 my-4 mb-2">Daftar Sekarang</button>
@@ -194,7 +194,7 @@
             <div class="row">
                 <div class="col-8 mx-auto text-center mt-1">
                     <p class="mb-0 text-secondary">
-                        &copy; {{ now()->year }} {{ config('app.name', 'SIGAP TBC') }}.
+                        &copy; {{ now()->year }} {{ config('app.name', 'SITUBA') }}.
                     </p>
                 </div>
             </div>

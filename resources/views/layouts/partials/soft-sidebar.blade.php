@@ -1,5 +1,5 @@
 @php
-    $brandName = config('app.name', 'SIGAP TBC');
+    $brandName = config('app.name', 'SITUBA');
     $navDescriptions = [
         'dashboard' => 'Ringkasan progres dan insight cepat',
         'screening' => 'Kelola skrining dan suspek',
@@ -23,7 +23,7 @@
         <div class="soft-sidebar__brand">
             <div class="soft-sidebar__badge mb-3">
                 <i class="ri-shield-check-line"></i>
-                SIGAP Mode Aktif
+                SITUBA Mode Aktif
             </div>
             <h4 class="mb-1">{{ $brandName }}</h4>
             <p class="text-sm text-muted mb-0">Dashboard terpadu untuk pemantauan eliminasi TBC kota/kabupaten.</p>
@@ -36,13 +36,14 @@
                 $isActive = $item['url'] !== '#' && url()->current() === $item['url'];
                 $description = $navDescriptions[$item['icon'] ?? ''] ?? 'Lihat detail dan tindak lanjut';
             @endphp
-            <a class="soft-sidebar__link {{ $isActive ? 'is-active' : '' }}" href="{{ $item['url'] }}">
+            <a class="soft-sidebar__link {{ $isActive ? 'is-active' : '' }}" href="{{ $item['url'] }}"
+                data-bs-toggle="tooltip" data-bs-placement="right" title="{{ $description }}">
                 <span class="soft-sidebar__icon">
                     @include('layouts.partials.soft-icon', ['icon' => $item['icon'] ?? 'default', 'active' => $isActive])
                 </span>
                 <span class="soft-sidebar__texts">
                     <span class="soft-sidebar__label">{{ $item['label'] }}</span>
-                    <span class="soft-sidebar__description">{{ $description }}</span>
+                    <span class="soft-sidebar__description d-none">{{ $description }}</span>
                 </span>
             </a>
         @endforeach
@@ -94,6 +95,13 @@
                 sidebar.removeEventListener('touchmove', preventScroll, passiveOptions);
             }
         };
+
+        const tooltipNodes = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipNodes.forEach(node => {
+            if (window.bootstrap?.Tooltip) {
+                new bootstrap.Tooltip(node);
+            }
+        });
 
         toggler?.addEventListener('click', toggleSidebar);
         closeBtn?.addEventListener('click', toggleSidebar);

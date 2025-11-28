@@ -6,7 +6,7 @@
             <div class="card shadow-sm border-0">
                 <div class="card-header d-flex flex-wrap gap-3 justify-content-between align-items-center">
                     <div>
-                        <h5 class="mb-0">Data Pasien SIGAP TBC</h5>
+                        <h5 class="mb-0">Data Pasien SITUBA</h5>
                         <p class="text-sm text-muted mb-0">Pemda dapat memonitor seluruh pasien beserta relasi kader dan puskesmas.</p>
                     </div>
                     <form method="GET" action="{{ route('pemda.patients') }}" class="d-flex flex-wrap gap-2">

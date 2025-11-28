@@ -7,7 +7,7 @@
                 <div class="card-header">
                     <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center">
                         <div>
-                            <h5 class="mb-0">Verifikasi Pengguna SIGAP TBC</h5>
+                            <h5 class="mb-0">Verifikasi Pengguna SITUBA</h5>
                             <p class="text-sm text-muted mb-0">Kelola status aktif pengguna sesuai kebutuhan wilayah.</p>
                         </div>
                         <div class="d-flex flex-wrap gap-2">

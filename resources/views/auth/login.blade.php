@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('assets/img/apple-icon.png') }}">
     <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}">
-    <title>{{ config('app.name', 'SIGAP TBC') }} &mdash; Masuk</title>
+    <title>{{ config('app.name', 'SITUBA') }} &mdash; Masuk</title>
     <link href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,800" rel="stylesheet" />
     <link href="{{ asset('assets/css/nucleo-icons.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/css/nucleo-svg.css') }}" rel="stylesheet" />
@@ -21,7 +21,7 @@
                     class="navbar navbar-expand-lg blur blur-rounded top-0 z-index-3 shadow position-absolute my-3 py-2 start-0 end-0 mx-4">
                     <div class="container-fluid pe-0">
                         <a class="navbar-brand font-weight-bolder ms-lg-0 ms-3" href="{{ url('/') }}">
-                            {{ config('app.name', 'SIGAP TBC') }}
+                            {{ config('app.name', 'SITUBA') }}
                         </a>
                         <div class="ms-auto d-flex align-items-center gap-2">
                             <a href="{{ route('blog.index') }}" class="btn btn-sm bg-gradient-primary mb-0">
@@ -71,7 +71,7 @@
                                 </div>
                                 <div class="card-footer text-center pt-0 px-lg-2 px-1">
                                     <p class="mb-2 text-sm mx-auto">
-                                        Lupa password? Hubungi admin SIGAP TBC untuk reset akun.
+                                        Lupa password? Hubungi admin SITUBA untuk reset akun.
                                     </p>
                                     <p class="mb-4 text-sm mx-auto">
                                         Belum punya akun?
@@ -98,7 +98,7 @@
             <div class="row">
                 <div class="col-8 mx-auto text-center mt-1">
                     <p class="mb-0 text-secondary">
-                        &copy; {{ now()->year }} {{ config('app.name', 'SIGAP TBC') }}.
+                        &copy; {{ now()->year }} {{ config('app.name', 'SITUBA') }}.
                     </p>
                 </div>
             </div>
