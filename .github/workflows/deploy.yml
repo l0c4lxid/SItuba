@@ -1,0 +1,59 @@
+name: Deploy to Shared Hosting
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, intl, pdo_mysql
+
+      - name: Install dependencies (Composer)
+        run: |
+          composer install --no-dev --optimize-autoloader
+
+      - name: Deploy core Laravel to /home/situbamy/situba
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          protocol: ftp
+          port: 21
+          local-dir: ./
+          server-dir: /home/situbamy/situba/
+          exclude: |
+            **/.git*
+            **/.github/**
+            node_modules/**
+            public/**
+            tests/**
+            storage/logs/**
+            storage/framework/cache/**
+            storage/framework/sessions/**
+            storage/framework/views/**
+
+      - name: Deploy public folder to /home/situbamy/public_html
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          protocol: ftp
+          port: 21
+          local-dir: ./public
+          server-dir: /home/situbamy/public_html/
+          exclude: |
+            **/.git*
+            **/.github/**
+            node_modules/**
