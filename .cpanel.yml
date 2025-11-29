@@ -1,0 +1,8 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/situbamy/public_html/
+    - /bin/cp -R public/* $DEPLOYPATH
+    - php artisan optimize
+    - php artisan view:clear
+    - php artisan cache:clear
