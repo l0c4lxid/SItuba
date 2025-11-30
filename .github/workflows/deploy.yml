@@ -34,6 +34,25 @@ jobs:
       - name: Build assets (Vite)
         run: npm run build
 
+      - name: Prepare core deploy bundle
+        run: |
+          rm -rf deploy-core
+          rsync -a ./ deploy-core/ \
+            --exclude 'node_modules' \
+            --exclude 'public' \
+            --exclude 'storage/logs' \
+            --exclude 'storage/framework/cache' \
+            --exclude 'storage/framework/sessions' \
+            --exclude 'storage/framework/views' \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude '.cpanel*' \
+            --exclude 'resources/assets' \
+            --exclude 'resources/js' \
+            --exclude 'resources/css' \
+            --exclude 'resources/sass' \
+            --exclude 'resources/less'
+
       - name: Deploy core Laravel to /home/situbamy/situba
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
@@ -42,7 +61,7 @@ jobs:
           password: ${{ secrets.FTP_PASS }}
           protocol: ftps
           port: 21
-          local-dir: ./
+          local-dir: ./deploy-core/
           server-dir: ./situba/
           state-name: .ftp-deploy-core-state.json
           timeout: 120000
