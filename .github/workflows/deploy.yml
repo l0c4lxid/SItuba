@@ -35,12 +35,19 @@ jobs:
         run: npm run build
 
       - name: Clear Laravel caches (pre-deploy)
+        env:
+          CACHE_STORE: array
+          CACHE_DRIVER: array
+          SESSION_DRIVER: array
+          QUEUE_CONNECTION: sync
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
         run: |
-          php artisan config:clear
-          php artisan route:clear
-          php artisan view:clear
-          php artisan cache:clear
-          php artisan event:clear
+          php artisan config:clear --no-ansi
+          php artisan route:clear --no-ansi
+          php artisan view:clear --no-ansi
+          php artisan cache:clear --no-ansi
+          php artisan event:clear --no-ansi
 
       - name: Prepare core deploy bundle
         run: |
