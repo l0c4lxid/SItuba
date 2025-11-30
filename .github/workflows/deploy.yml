@@ -104,3 +104,7 @@ jobs:
             **/.cpanel.yml
             **/.cpanel*
             build/**
+            assets/**
+            vendor/**
+            pages/**
+            pdf/**
