@@ -15,6 +15,33 @@ use Illuminate\Support\Arr;
 
 class UserVerificationController extends Controller
 {
+    public function index(Request $request)
+    {
+        abort_if(auth()->user()->role !== UserRole::Pemda, 403);
+
+        $pendingUsers = User::query()
+            ->with('detail')
+            ->where('role', '!=', UserRole::Pemda->value)
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $term = '%' . $request->input('q') . '%';
+                $query->where(function ($sub) use ($term) {
+                    $sub->where('name', 'like', $term)
+                        ->orWhere('phone', 'like', $term)
+                        ->orWhereHas('detail', function ($detail) use ($term) {
+                            $detail->where('organization', 'like', $term)
+                                ->orWhere('address', 'like', $term);
+                        });
+                });
+            })
+            ->latest()
+            ->paginate(10);
+
+        return view('pemda.verification', [
+            'records' => $pendingUsers,
+            'search' => $request->input('q', ''),
+        ]);
+    }
+
     public function show(User $user)
     {
         abort_if(auth()->user()->role !== UserRole::Pemda, 403);
@@ -143,6 +170,34 @@ class UserVerificationController extends Controller
         $user->delete();
 
         return redirect()->route('pemda.verification')->with('status', "Pengguna {$name} berhasil dihapus.");
+    }
+
+    public function updateStatus(Request $request, User $user): RedirectResponse
+    {
+        abort_if(auth()->user()->role !== UserRole::Pemda, 403);
+
+        $validated = $request->validate([
+            'status' => ['required', 'in:active,inactive'],
+        ]);
+
+        $user->is_active = $validated['status'] === 'active';
+        $user->save();
+
+        return back()->with('status', 'Status pengguna berhasil diperbarui.');
+    }
+
+    public function bulkStatus(Request $request): RedirectResponse
+    {
+        abort_if(auth()->user()->role !== UserRole::Pemda, 403);
+
+        $validated = $request->validate([
+            'status' => ['required', 'in:active,inactive'],
+        ]);
+
+        User::where('role', '!=', UserRole::Pemda->value)
+            ->update(['is_active' => $validated['status'] === 'active']);
+
+        return back()->with('status', 'Semua status pengguna berhasil diperbarui.');
     }
 
     private function supervisorOptions(UserRole $role): Collection
