@@ -141,6 +141,88 @@ body {
     box-shadow: 0 25px 60px rgba(15, 23, 42, 0.15);
 }
 
+.sigap-search {
+    --search-bg: linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(79, 70, 229, 0.08));
+    border-radius: 999px;
+    padding: 6px;
+    background: var(--search-bg);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.sigap-search .form-control,
+.sigap-search .input-group-text {
+    border: none;
+    box-shadow: none;
+    background: #fff;
+}
+
+.sigap-search .form-control {
+    border-radius: 999px;
+    padding-left: 0.5rem;
+}
+
+.sigap-search .input-group-text {
+    border-radius: 999px;
+    color: var(--sigap-muted);
+}
+
+.sigap-search:focus-within {
+    background: linear-gradient(135deg, rgba(15, 118, 110, 0.16), rgba(79, 70, 229, 0.16));
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.18);
+}
+
+.sigap-select {
+    border-radius: 14px;
+    border: 1px solid var(--sigap-border);
+    background: linear-gradient(135deg, rgba(15, 118, 110, 0.06), rgba(79, 70, 229, 0.06)), #fff;
+    padding-inline: 0.75rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.sigap-select:focus {
+    border-color: rgba(15, 118, 110, 0.45);
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.18);
+}
+
+.sigap-select option {
+    background: #fff;
+    color: var(--sigap-text);
+    padding: 6px;
+}
+
+.news-filter {
+    align-items: stretch;
+}
+
+.news-filter .news-filter__control {
+    flex: 1 1 240px;
+    min-height: 46px;
+    border-radius: 12px;
+}
+
+.news-filter .input-group.news-filter__control {
+    flex: 1 1 320px;
+}
+
+.news-filter .input-group .input-group-text,
+.news-filter .input-group .form-control {
+    height: 46px;
+}
+
+.news-filter .input-group .input-group-text {
+    border-radius: 12px 0 0 12px;
+}
+
+.news-filter .input-group .form-control {
+    border-radius: 0 12px 12px 0;
+}
+
+.news-filter .news-filter__button {
+    min-height: 46px;
+    border-radius: 12px;
+    padding-inline: 18px;
+}
+
 .card-header {
     background: transparent;
     border-bottom: 1px solid rgba(15, 23, 42, 0.07);

@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Http\Controllers\Pemda\ProfileController as PemdaProfileController;
+use App\Http\Controllers\Pemda\UserVerificationController;
 use App\Http\Controllers\NewsController;
 
 if (!function_exists('ensureFamilyTreatment')) {
@@ -515,6 +516,14 @@ Route::middleware('auth')->group(function () {
             'search' => $request->input('q', ''),
         ]);
     })->name('pemda.verification');
+    Route::get('/pemda/verifikasi/{user}', [UserVerificationController::class, 'show'])
+        ->name('pemda.verification.show');
+    Route::put('/pemda/verifikasi/{user}', [UserVerificationController::class, 'updateInfo'])
+        ->name('pemda.verification.update');
+    Route::put('/pemda/verifikasi/{user}/credentials', [UserVerificationController::class, 'updateCredentials'])
+        ->name('pemda.verification.credentials');
+    Route::delete('/pemda/verifikasi/{user}', [UserVerificationController::class, 'destroy'])
+        ->name('pemda.verification.destroy');
 
     Route::post('/pemda/verifikasi/{user}/status', function (Request $request, User $user) {
         abort_if(auth()->user()->role !== UserRole::Pemda, 403);
@@ -1067,6 +1076,8 @@ Route::middleware('auth')->group(function () {
             $years[] = $currentYear - $i;
         }
 
+        $perPage = 10;
+
         $patientsQuery = User::query()
             ->with([
                 'detail',
@@ -1108,13 +1119,14 @@ Route::middleware('auth')->group(function () {
             })
             ->latest();
 
-        $patients = $patientsQuery->get();
+        $patientsForStats = (clone $patientsQuery)->get();
+        $patients = $patientsQuery->paginate($perPage)->withQueryString();
 
         $stats = [
-            'total' => $patients->count(),
-            'belum_skrining' => $patients->filter(fn($patient) => $patient->screenings->isEmpty())->count(),
-            'sudah_skrining' => $patients->filter(fn($patient) => $patient->screenings->isNotEmpty())->count(),
-            'suspect' => $patients->filter(function ($patient) {
+            'total' => $patientsForStats->count(),
+            'belum_skrining' => $patientsForStats->filter(fn($patient) => $patient->screenings->isEmpty())->count(),
+            'sudah_skrining' => $patientsForStats->filter(fn($patient) => $patient->screenings->isNotEmpty())->count(),
+            'suspect' => $patientsForStats->filter(function ($patient) {
                 $latest = $patient->screenings->first();
                 if (!$latest) {
                     return false;

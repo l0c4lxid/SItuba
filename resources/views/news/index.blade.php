@@ -47,27 +47,21 @@
                         </div>
                     </div>
 
-                    <form method="GET" action="{{ route('news.index') }}" class="row g-2 align-items-end mb-4">
-                        <div class="col-md-4">
-                            <label class="form-label text-sm mb-1">Status</label>
-                            <select name="status" class="form-select form-select-sm">
-                                <option value="all" {{ $statusFilter === 'all' ? 'selected' : '' }}>Semua status</option>
-                                <option value="pending" {{ $statusFilter === 'pending' ? 'selected' : '' }}>Menunggu publikasi</option>
-                                <option value="published" {{ $statusFilter === 'published' ? 'selected' : '' }}>Sudah tayang</option>
-                            </select>
+                    <form method="GET" action="{{ route('news.index') }}" class="d-flex flex-wrap gap-2 align-items-center mb-4 news-filter">
+                        <label class="visually-hidden" for="status-filter">Status</label>
+                        <select id="status-filter" name="status" class="form-select news-filter__control">
+                            <option value="all" {{ $statusFilter === 'all' ? 'selected' : '' }}>Semua status</option>
+                            <option value="pending" {{ $statusFilter === 'pending' ? 'selected' : '' }}>Menunggu publikasi</option>
+                            <option value="published" {{ $statusFilter === 'published' ? 'selected' : '' }}>Sudah tayang</option>
+                        </select>
+                        <label class="visually-hidden" for="news-search">Cari judul</label>
+                        <div class="input-group news-filter__control">
+                            <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
+                            <input id="news-search" type="text" name="q" class="form-control" value="{{ $search }}" placeholder="Cari judul atau penulis">
                         </div>
-                        <div class="col-md-6 col-lg-5">
-                            <label class="form-label text-sm mb-1">Cari judul</label>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
-                                <input type="text" name="q" class="form-control" value="{{ $search }}" placeholder="Judul atau penulis">
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-sm btn-outline-primary w-100">
-                                Terapkan
-                            </button>
-                        </div>
+                        <button type="submit" class="btn btn-outline-primary news-filter__button">
+                            Terapkan
+                        </button>
                     </form>
 
                     <div class="d-flex flex-column gap-3">

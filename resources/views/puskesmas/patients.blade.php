@@ -6,13 +6,13 @@
             <div class="card shadow-sm border-0">
                 <div class="card-header d-flex flex-wrap gap-3 justify-content-between align-items-center">
                     <div>
-                        <h5 class="mb-0">Data Pasien Kader</h5>
-                        <p class="text-sm text-muted mb-0">Daftar pasien yang dibina oleh kader di bawah puskesmas ini.</p>
+                        <h5 class="mb-0">Data Pasien Skrining</h5>
+                        <p class="text-sm text-muted mb-0">Pantau pasien binaan kader dan progres skrining mereka.</p>
                     </div>
                     <form method="GET" action="{{ route('puskesmas.patients') }}" class="d-flex flex-wrap gap-2 align-items-center">
-                        <div class="input-group input-group-sm" style="min-width: 250px;">
-                            <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
-                            <input type="text" name="q" class="form-control" placeholder="Cari nama / nomor HP / alamat" value="{{ $search ?? '' }}">
+                        <div class="input-group input-group-sm sigap-search" style="min-width: 250px;">
+                            <span class="input-group-text"><i class="fa fa-search"></i></span>
+                            <input type="text" name="q" class="form-control" placeholder="Cari nama, nomor HP, atau alamat" value="{{ $search ?? '' }}">
                         </div>
                         <button type="submit" class="btn btn-sm btn-outline-primary">Terapkan</button>
                     </form>

@@ -15,7 +15,7 @@
         UserRole::Puskesmas->value => [
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
             ['label' => 'Data Kader', 'url' => route('puskesmas.kaders'), 'icon' => 'users'],
-            ['label' => 'Data Pasien', 'url' => route('puskesmas.patients'), 'icon' => 'folder'],
+            ['label' => 'Data Pasien Skrining', 'url' => route('puskesmas.patients'), 'icon' => 'folder'],
             ['label' => 'Skrining', 'url' => route('puskesmas.screenings'), 'icon' => 'screening'],
             ['label' => 'Berobat', 'url' => route('puskesmas.treatment'), 'icon' => 'berobat'],
             ['label' => 'Berita', 'url' => route('news.index'), 'icon' => 'news'],
@@ -25,20 +25,20 @@
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
             ['label' => 'Puskesmas Mitra', 'url' => route('kelurahan.puskesmas'), 'icon' => 'folder'],
             ['label' => 'Data Kader', 'url' => route('kelurahan.kaders'), 'icon' => 'users'],
-            ['label' => 'Data Pasien', 'url' => route('kelurahan.patients'), 'icon' => 'folder'],
+            ['label' => 'Data Pasien Skrining', 'url' => route('kelurahan.patients'), 'icon' => 'folder'],
             ['label' => 'Berita', 'url' => route('news.index'), 'icon' => 'news'],
             // ['label' => 'Sembuh', 'url' => '#', 'icon' => 'sembuh'],
         ],
         UserRole::Pemda->value => [
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
             ['label' => 'Verifikasi Pengguna', 'url' => route('pemda.verification'), 'icon' => 'verify'],
-            ['label' => 'Data Pasien', 'url' => route('pemda.patients'), 'icon' => 'folder'],
+            ['label' => 'Data Pasien Skrining', 'url' => route('pemda.patients'), 'icon' => 'folder'],
             ['label' => 'Semua Berita', 'url' => route('news.index'), 'icon' => 'news'],
         ],
         UserRole::Kader->value => [
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
             ['label' => 'Puskesmas Induk', 'url' => route('kader.puskesmas'), 'icon' => 'folder'],
-            ['label' => 'Data Pasien', 'url' => route('kader.patients'), 'icon' => 'folder'],
+            ['label' => 'Data Pasien Skrining', 'url' => route('kader.patients'), 'icon' => 'folder'],
             ['label' => 'Skrining', 'url' => route('kader.screening.index'), 'icon' => 'screening'],
             ['label' => 'Materi', 'url' => route('kader.materi'), 'icon' => 'materi'],
             ['label' => 'Berita', 'url' => route('news.index'), 'icon' => 'news'],
@@ -63,7 +63,7 @@
         'icon' => 'profile',
     ];
 
-    $now = now();
+    $now = now()->locale('id');
     $hour = (int) $now->format('H');
     $greeting = match (true) {
         $hour < 11 => 'Selamat pagi',
@@ -121,12 +121,12 @@
                                 <i class="ri-calendar-line me-1"></i>{{ $now->translatedFormat('l, d M Y') }}
                             </span>
                         </div>
-                        <div class="soft-topbar__heading">
-                            <div>
-                                <h1 class="soft-page-title mb-0">{{ $navTitle }}</h1>
-                                <p class="soft-topbar__subtitle mb-0">Data pelayanan TBC terintegrasi dan langkah tindak lanjut prioritas.</p>
+                            <div class="soft-topbar__heading">
+                                <div>
+                                    <h1 class="soft-page-title mb-0">{{ $navTitle }}</h1>
+                                    <p class="soft-topbar__subtitle mb-0">Data skrining dan tindak lanjut TBC yang terintegrasi di tiap level layanan.</p>
+                                </div>
                             </div>
-                        </div>
                     </div>
                     <div class="soft-topbar__actions">
                         <button id="iconNavbarSidenav" class="btn btn-outline-primary btn-icon d-lg-none" type="button" aria-label="Navigasi">

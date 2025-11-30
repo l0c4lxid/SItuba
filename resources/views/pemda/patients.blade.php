@@ -6,42 +6,56 @@
             <div class="card shadow-sm border-0">
                 <div class="card-header d-flex flex-wrap gap-3 justify-content-between align-items-center">
                     <div>
-                        <h5 class="mb-0">Data Pasien SITUBA</h5>
-                        <p class="text-sm text-muted mb-0">Pemda dapat memonitor seluruh pasien beserta relasi kader dan puskesmas.</p>
+                        <h5 class="mb-0">Data Pasien Skrining</h5>
+                        <p class="text-sm text-muted mb-0">Pantau progres skrining pasien beserta relasi kader dan puskesmas.</p>
                     </div>
-                    <form method="GET" action="{{ route('pemda.patients') }}" class="d-flex flex-wrap gap-2">
-                        <div class="input-group input-group-sm" style="min-width:220px;">
-                            <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
-                            <input type="text" name="q" class="form-control" placeholder="Cari nama / nomor HP / alamat" value="{{ $search ?? '' }}">
+                    <form method="GET" action="{{ route('pemda.patients') }}" class="d-flex flex-column gap-2 w-100">
+                        <div class="row g-2 w-100">
+                            <div class="col-md-6">
+                                <select name="puskesmas_id" class="form-select form-select-sm sigap-select">
+                                    <option value="">Semua Puskesmas</option>
+                                    @foreach ($puskesmasOptions as $option)
+                                        <option value="{{ $option->id }}" @selected(($filters['puskesmas_id'] ?? '') == $option->id)>{{ $option->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <select name="kelurahan_id" class="form-select form-select-sm sigap-select">
+                                    <option value="">Semua Kelurahan</option>
+                                    @foreach ($kelurahanOptions as $option)
+                                        <option value="{{ $option->id }}" @selected(($filters['kelurahan_id'] ?? '') == $option->id)>{{ $option->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
-                        <select name="puskesmas_id" class="form-select form-select-sm">
-                            <option value="">Semua Puskesmas</option>
-                            @foreach ($puskesmasOptions as $option)
-                                <option value="{{ $option->id }}" @selected(($filters['puskesmas_id'] ?? '') == $option->id)>{{ $option->name }}</option>
-                            @endforeach
-                        </select>
-                        <select name="kelurahan_id" class="form-select form-select-sm">
-                            <option value="">Semua Kelurahan</option>
-                            @foreach ($kelurahanOptions as $option)
-                                <option value="{{ $option->id }}" @selected(($filters['kelurahan_id'] ?? '') == $option->id)>{{ $option->name }}</option>
-                            @endforeach
-                        </select>
-                        <select name="month" class="form-select form-select-sm">
-                            <option value="">Bulan</option>
-                            @foreach ($months as $value => $label)
-                                <option value="{{ $value }}" @selected(($filters['month'] ?? '') == $value)>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                        <select name="year" class="form-select form-select-sm">
-                            <option value="">Tahun</option>
-                            @foreach ($years as $year)
-                                <option value="{{ $year }}" @selected(($filters['year'] ?? '') == $year)>{{ $year }}</option>
-                            @endforeach
-                        </select>
-                        <button type="submit" class="btn btn-sm btn-outline-primary">Cari</button>
-                        @if ($search || ($filters['puskesmas_id'] ?? '') || ($filters['kelurahan_id'] ?? '') || ($filters['month'] ?? '') || ($filters['year'] ?? ''))
-                            <a href="{{ route('pemda.patients') }}" class="btn btn-sm btn-light">Reset</a>
-                        @endif
+                        <div class="row g-2 w-100">
+                            <div class="col-md-6">
+                                <select name="month" class="form-select form-select-sm sigap-select">
+                                    <option value="">Bulan</option>
+                                    @foreach ($months as $value => $label)
+                                        <option value="{{ $value }}" @selected(($filters['month'] ?? '') == $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <select name="year" class="form-select form-select-sm sigap-select">
+                                    <option value="">Tahun</option>
+                                    @foreach ($years as $year)
+                                        <option value="{{ $year }}" @selected(($filters['year'] ?? '') == $year)>{{ $year }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <div class="input-group input-group-sm sigap-search" style="min-width:240px;">
+                                <span class="input-group-text"><i class="fa fa-search"></i></span>
+                                <input type="text" name="q" class="form-control" placeholder="Cari nama, nomor HP, atau alamat" value="{{ $search ?? '' }}">
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Cari</button>
+                            @if ($search || ($filters['puskesmas_id'] ?? '') || ($filters['kelurahan_id'] ?? '') || ($filters['month'] ?? '') || ($filters['year'] ?? ''))
+                                <a href="{{ route('pemda.patients') }}" class="btn btn-sm btn-light">Reset</a>
+                            @endif
+                        </div>
                     </form>
                 </div>
                 <div class="card-body">
@@ -91,6 +105,10 @@
                                         'recovered' => ['label' => 'Selesai', 'badge' => 'bg-gradient-success'],
                                     ];
                                 @endphp
+                                @php
+                                    $hasPagination = method_exists($patients, 'firstItem');
+                                    $firstNumber = $hasPagination ? $patients->firstItem() : null;
+                                @endphp
                                 @forelse ($patients as $patient)
                                     @php
                                         $kader = optional($patient->detail)->supervisor;
@@ -109,7 +127,7 @@
                                             : null;
                                     @endphp
                                     <tr>
-                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $firstNumber ? $firstNumber + $loop->index : $loop->iteration }}</td>
                                         <td>
                                             <h6 class="mb-0 text-sm">{{ $patient->name }}</h6>
                                             <p class="text-xs text-muted mb-0">HP: {{ $patient->phone }} • NIK: {{ $patient->detail->nik ?? '-' }}</p>
@@ -149,6 +167,22 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    @php
+                        $hasPagination = method_exists($patients, 'firstItem');
+                        $from = $hasPagination ? $patients->firstItem() : ($patients->count() ? 1 : 0);
+                        $to = $hasPagination ? $patients->lastItem() : $patients->count();
+                        $total = $hasPagination ? $patients->total() : $patients->count();
+                    @endphp
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+                        <p class="text-sm text-muted mb-0">
+                            Menampilkan <span class="fw-semibold">{{ $from }}</span> - <span class="fw-semibold">{{ $to }}</span> dari <span class="fw-semibold">{{ $total }}</span> pasien
+                        </p>
+                        @if ($hasPagination)
+                            <div class="mb-0">
+                                {{ $patients->withQueryString()->onEachSide(1)->links('pagination::bootstrap-5') }}
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

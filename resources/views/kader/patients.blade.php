@@ -6,17 +6,17 @@
             <div class="card shadow-sm border-0">
                 <div class="card-header d-flex flex-wrap gap-3 justify-content-between align-items-center">
                     <div>
-                        <h5 class="mb-0">Data Pasien Binaan</h5>
-                        <p class="text-sm text-muted mb-0">Menampilkan warga yang terdaftar dengan kader ini.</p>
+                        <h5 class="mb-0">Data Pasien Skrining</h5>
+                        <p class="text-sm text-muted mb-0">Kelola pasien binaan dan awasi progres skrining mereka.</p>
                     </div>
                     <div class="d-flex flex-wrap gap-2">
                         <a href="{{ route('kader.patients.create') }}" class="btn btn-sm btn-primary">
                             <i class="fa fa-plus me-1"></i> Tambah Pasien
                         </a>
                         <form method="GET" action="{{ route('kader.patients') }}" class="d-flex gap-2">
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
-                                <input type="text" name="q" class="form-control" placeholder="Cari nama / nomor HP / alamat" value="{{ $search ?? '' }}">
+                            <div class="input-group input-group-sm sigap-search">
+                                <span class="input-group-text"><i class="fa fa-search"></i></span>
+                                <input type="text" name="q" class="form-control" placeholder="Cari nama, nomor HP, atau alamat" value="{{ $search ?? '' }}">
                             </div>
                             <button type="submit" class="btn btn-sm btn-outline-primary">Cari</button>
                         </form>

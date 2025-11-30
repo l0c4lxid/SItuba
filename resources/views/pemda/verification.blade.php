@@ -34,9 +34,9 @@
                         <table class="table table-hover align-items-center mb-0">
                             <thead>
                                 <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Peran</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Kontak</th>
                                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Dibuat</th>
                                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
                                     <th></th>
@@ -45,24 +45,22 @@
                             <tbody>
                                 @forelse ($records as $user)
                                     <tr>
+                                        <td class="align-middle">
+                                            <span class="text-xs text-muted">
+                                                {{ ($records->firstItem() ?? 0) + $loop->index }}
+                                            </span>
+                                        </td>
                                         <td>
-                                            <div class="d-flex px-2 py-1">
+                                            <a href="{{ route('pemda.verification.show', $user) }}" class="d-flex px-2 py-1 text-body" title="Detail user">
                                                 <div><i class="fa-solid fa-user text-primary me-3"></i></div>
                                                 <div class="d-flex flex-column justify-content-center">
                                                     <h6 class="mb-0 text-sm">{{ $user->name }}</h6>
                                                 </div>
-                                            </div>
+                                            </a>
                                         </td>
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ $user->role->label() }}</p>
                                             <p class="text-xs text-secondary mb-0">{{ $user->detail->organization ?? '-' }}</p>
-                                        </td>
-                                        <td>
-                                            <p class="text-xs mb-0">HP login: {{ $user->phone }}</p>
-                                            <p class="text-xs text-secondary mb-0">{{ $user->detail->address ?? 'Alamat belum diisi' }}</p>
-                                            @if ($user->detail?->nik)
-                                                <p class="text-xs text-secondary mb-0">NIK: {{ $user->detail->nik }}</p>
-                                            @endif
                                         </td>
                                         <td class="align-middle text-center">
                                             <span class="text-secondary text-xs font-weight-bold">
