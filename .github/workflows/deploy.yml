@@ -51,7 +51,7 @@ jobs:
           password: ${{ secrets.FTP_PASS }}
           protocol: ftp
           port: 21
-          local-dir: ./public
+          local-dir: ./public/
           server-dir: /home/situbamy/public_html/
           exclude: |
             **/.git*
