@@ -326,7 +326,7 @@
                         <p>{{ Str::limit(strip_tags($post->content), 160) }}</p>
                         <div class="meta">
                             <span><i class="fa fa-user"></i> {{ $post->author->name ?? 'Kontributor' }}</span>
-                            <span><i class="fa fa-calendar"></i> {{ optional($post->published_at)->translatedFormat('d M Y') }}</span>
+                            <span><i class="fa fa-calendar"></i> {{ optional($post->published_at)?->format('d M Y') }}</span>
                         </div>
                         <div class="card-footer">
                             <a class="read-more" href="{{ route('blog.show', $post) }}">Baca lebih lanjut →</a>

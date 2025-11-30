@@ -43,7 +43,7 @@ jobs:
           protocol: ftps
           port: 21
           local-dir: ./
-          server-dir: /home/situbamy/situba/
+          server-dir: ./situba/
           state-name: .ftp-deploy-core-state.json
           timeout: 120000
           exclude: |
@@ -69,7 +69,7 @@ jobs:
           protocol: ftps
           port: 21
           local-dir: ./public/
-          server-dir: /home/situbamy/public_html/
+          server-dir: ./public_html/
           state-name: .ftp-deploy-public-state.json
           timeout: 120000
           exclude: |

@@ -154,7 +154,7 @@
             <h1>{{ $post->title }}</h1>
             <div class="meta">
                 <span><i class="fa fa-user"></i> {{ $post->author->name ?? 'Kontributor' }}</span>
-                <span><i class="fa fa-calendar"></i> {{ optional($post->published_at)->translatedFormat('d M Y H:i') }}</span>
+                <span><i class="fa fa-calendar"></i> {{ optional($post->published_at)?->format('d M Y H:i') }}</span>
             </div>
 
             <div class="content">
