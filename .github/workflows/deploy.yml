@@ -45,7 +45,7 @@ jobs:
           local-dir: ./
           server-dir: /home/situbamy/situba/
           state-name: .ftp-deploy-core-state.json
-          timeout: 60000
+          timeout: 120000
           exclude: |
             **/.git*
             **/.github/**
@@ -56,6 +56,7 @@ jobs:
             storage/framework/cache/**
             storage/framework/sessions/**
             storage/framework/views/**
+            .cpanel.yml
 
       - name: Deploy public folder to /home/situbamy/public_html
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -68,8 +69,9 @@ jobs:
           local-dir: ./public/
           server-dir: /home/situbamy/public_html/
           state-name: .ftp-deploy-public-state.json
-          timeout: 60000
+          timeout: 120000
           exclude: |
             **/.git*
             **/.github/**
             node_modules/**
+            .cpanel.yml
