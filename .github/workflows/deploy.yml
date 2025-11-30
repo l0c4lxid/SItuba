@@ -52,6 +52,11 @@ jobs:
             node_modules/**
             public/**
             tests/**
+            resources/assets/**
+            resources/js/**
+            resources/css/**
+            resources/sass/**
+            resources/less/**
             storage/logs/**
             storage/framework/cache/**
             storage/framework/sessions/**
