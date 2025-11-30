@@ -40,10 +40,12 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
-          protocol: ftp
+          protocol: ftps
           port: 21
           local-dir: ./
           server-dir: /home/situbamy/situba/
+          state-name: .ftp-deploy-core-state.json
+          timeout: 60000
           exclude: |
             **/.git*
             **/.github/**
@@ -61,10 +63,12 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
-          protocol: ftp
+          protocol: ftps
           port: 21
           local-dir: ./public/
           server-dir: /home/situbamy/public_html/
+          state-name: .ftp-deploy-public-state.json
+          timeout: 60000
           exclude: |
             **/.git*
             **/.github/**
