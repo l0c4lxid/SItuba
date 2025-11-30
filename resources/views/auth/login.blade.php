@@ -664,33 +664,24 @@
             @endif
 
                 @if ($errors->any())
-                    const errors = @json($errors->all());
-                    const lastPhone = @json(old('phone'));
-                    if (errors.length) {
-                        const tips = [
-                            'Gunakan nomor HP dengan awalan 08 (bukan +62).',
-                            'Password peka huruf besar/kecil, periksa Caps Lock.',
-                            'Jika lupa password, minta reset ke admin SITUBA.',
-                        ];
-
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Login gagal, coba lagi',
-                            html: `
-                                                    <div class="text-start">
-                                                        <p class="mb-2">Kami tidak bisa memproses login.</p>
-                                                        <ul class="mb-3">
-                                                            ${errors.map(msg => `<li>${msg}</li>`).join('')}
-                                                        </ul>
-                                                        ${lastPhone ? `<p class="mb-1"><strong>Nomor terakhir:</strong> ${lastPhone}</p>` : ''}
-                                                        <p class="mb-0 text-sm text-muted">${tips.join(' • ')}</p>
-                                                    </div>
-                                                `,
-                            confirmButtonText: 'Coba lagi',
-                            showCloseButton: true,
-                            confirmButtonColor: '#0ea5e9',
-                        });
-                    }
+                const errors = @json($errors->all());
+                const lastPhone = @json(old('phone'));
+                if (errors.length) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Login gagal',
+                        html: `
+                                                <div class="text-start">
+                                                    <p class="mb-2">Login gagal, coba masukkan username atau password yang benar.</p>
+                                                    ${errors.length ? `<p class="mb-2 text-sm text-danger">${errors.join('<br>')}</p>` : ''}
+                                                    ${lastPhone ? `<p class="mb-0"><strong>Nomor terakhir:</strong> ${lastPhone}</p>` : ''}
+                                                </div>
+                                            `,
+                        confirmButtonText: 'Coba lagi',
+                        showCloseButton: true,
+                        confirmButtonColor: '#0ea5e9',
+                    });
+                }
                 @endif
         });
     </script>
