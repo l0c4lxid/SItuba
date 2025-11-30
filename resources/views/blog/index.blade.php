@@ -9,7 +9,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog SITUBA</title>
+    <title>Blog SITUBA - Sistem Informasi Tuberkulosis</title>
+    <meta name="description" content="Blog SITUBA berisi artikel, info kesehatan, dan testimoni seputar pemantauan Tuberkulosis oleh pasien, kader, puskesmas, kelurahan, dan pemda.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
