@@ -120,16 +120,35 @@
                 });
             @endif
 
-                @if ($errors->any())
-                    const errors = @json($errors->all());
-                    if (errors.length) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Login gagal',
-                            html: '<ul class="text-start mb-0">' + errors.map(msg => `<li>${msg}</li>`).join('') + '</ul>',
-                        });
-                    }
-                @endif
+            @if ($errors->any())
+                const errors = @json($errors->all());
+                const lastPhone = @json(old('phone'));
+                if (errors.length) {
+                    const tips = [
+                        'Gunakan nomor HP dengan awalan 08 (bukan +62).',
+                        'Password peka huruf besar/kecil, periksa Caps Lock.',
+                        'Jika lupa password, minta reset ke admin SITUBA.',
+                    ];
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Login gagal, coba lagi',
+                        html: `
+                            <div class="text-start">
+                                <p class="mb-2">Kami tidak bisa memproses login.</p>
+                                <ul class="mb-3">
+                                    ${errors.map(msg => `<li>${msg}</li>`).join('')}
+                                </ul>
+                                ${lastPhone ? `<p class="mb-1"><strong>Nomor terakhir:</strong> ${lastPhone}</p>` : ''}
+                                <p class="mb-0 text-sm text-muted">${tips.join(' • ')}</p>
+                            </div>
+                        `,
+                        confirmButtonText: 'Coba lagi',
+                        showCloseButton: true,
+                        confirmButtonColor: '#0ea5e9',
+                    });
+                }
+            @endif
         });
     </script>
 </body>
