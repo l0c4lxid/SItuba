@@ -14,7 +14,7 @@ class PemdaUserSeeder extends Seeder
     {
         $pemda = User::create([
             'name' => 'Dinas Kesehatan Kota Surakarta',
-            'phone' => '0271642911',
+            'phone' => '0101',
             'role' => UserRole::Pemda,
             'password' => Hash::make('password123'),
             'is_active' => true,
