@@ -95,7 +95,6 @@ jobs:
             tests/**
             resources/assets/**
             resources/js/**
-            resources/css/**
             resources/sass/**
             resources/less/**
             storage/logs/**
