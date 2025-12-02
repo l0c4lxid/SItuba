@@ -1,23 +1,16 @@
-# SIGAP TBC – Sistem Skrining Tuberkulosis
+# SITUBA – Sistem Informasi Tuberkulosis Surakarta
 
-SIGAP TBC adalah aplikasi web berbasis Laravel 12 untuk mendukung proses skrining tuberkulosis di lapangan. Aplikasi ini menyediakan alur registrasi, login, dan manajemen akun untuk lima jenis pengguna:
-
-- Pasien
-- Kader TBC
-- Puskesmas
-- Kelurahan
-- Pemerintah Daerah
-
-Setiap akun memiliki detail profil (NIK, kontak, alamat, instansi) serta status aktif/tidak aktif sehingga tim admin dapat mengelola akses tanpa email verification.
+SITUBA adalah aplikasi web berbasis Laravel 12 untuk pemantauan, edukasi, dan pelaporan tuberkulosis di Kota Surakarta. Aplikasi ini menghubungkan Pemda, puskesmas, kelurahan, kader, hingga pasien dalam satu dasbor.
 
 ## Fitur Utama
 
-- **Multi-role auth** dengan Laravel Breeze (Blade + Tailwind).
-- **Registrasi mandiri** untuk semua jenis pengguna dengan form yang panjang.
-- **Dashboard personal** yang menampilkan status peran, aktivitas akun, dan detail kontak.
-- **Tabel `user_details`** untuk menyimpan data tambahan pasien/kader/faskes.
-- **Portal berita/blog**: semua pengguna dapat membuat berita/testimoni, Pemda mempublikasikan; mendukung unggah gambar utama dan tampil di `/blog`.
-- **Session & queue siap pakai** dengan konfigurasi database driver.
+- **Multi-role auth & dashboard**: Pemda, Puskesmas, Kelurahan, Kader, Pasien; autentikasi via nomor HP.
+- **Verifikasi akun Pemda**: validasi, ubah kredensial, aktif/nonaktif, dan bulk update status.
+- **Manajemen pasien puskesmas**: daftar pasien, anggota keluarga, status berobat, dan tindak lanjut.
+- **Skrining & pendampingan**: modul skrining dan pencatatan pendampingan minum obat di lapangan.
+- **Monitoring kelurahan**: pantau puskesmas dan kader di wilayahnya.
+- **Portal berita/edukasi**: publikasi artikel di `/blog`, lengkap dengan publish/unpublish.
+- **Landing + SEO dasar**: sitemap XML dinamis dan robots.txt otomatis mengikuti domain.
 
 ## Persyaratan
 
@@ -75,4 +68,4 @@ Setiap akun memiliki detail profil (NIK, kontak, alamat, instansi) serta status 
 
 ## Kontribusi & Lisensi
 
-Proyek ini dibangun di atas Laravel dan menggunakan lisensi MIT. Silakan buka issue atau pull request jika ingin berkontribusi pada modul SIGAP TBC.
+Proyek ini dibangun di atas Laravel dan menggunakan lisensi MIT. Silakan buka issue atau pull request jika ingin berkontribusi pada SITUBA.
