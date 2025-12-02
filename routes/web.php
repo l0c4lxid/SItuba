@@ -31,7 +31,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/robots.txt', function () {
-    $base = rtrim(config('app.url'), '/');
+    $base = rtrim(config('app.url') ?: request()->getSchemeAndHttpHost(), '/');
     $lines = [
         'User-agent: *',
         'Allow: /',
@@ -42,7 +42,7 @@ Route::get('/robots.txt', function () {
 });
 
 Route::get('/sitemap.xml', function () {
-    $base = rtrim(config('app.url'), '/');
+    $base = rtrim(config('app.url') ?: request()->getSchemeAndHttpHost(), '/');
     $posts = NewsPost::query()
         ->where('status', 'published')
         ->orderByDesc('published_at')
