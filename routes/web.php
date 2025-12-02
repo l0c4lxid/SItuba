@@ -15,9 +15,19 @@ use App\Http\Controllers\Puskesmas\KaderController as PuskesmasKaderController;
 use App\Http\Controllers\Puskesmas\PatientController as PuskesmasPatientController;
 use App\Http\Controllers\Puskesmas\ScreeningController as PuskesmasScreeningController;
 use App\Http\Controllers\Puskesmas\TreatmentController as PuskesmasTreatmentController;
+use App\Models\User;
+use App\Enums\UserRole;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/login')->name('home');
+Route::get('/', function () {
+    $puskesmasCount = User::where('role', UserRole::Puskesmas->value)->count();
+    $kelurahanCount = User::where('role', UserRole::Kelurahan->value)->count();
+
+    return view('landing', [
+        'puskesmasCount' => $puskesmasCount,
+        'kelurahanCount' => $kelurahanCount,
+    ]);
+})->name('home');
 Route::get('/blog', [NewsController::class, 'publicIndex'])->name('blog.index');
 Route::get('/blog/{newsPost}', [NewsController::class, 'publicShow'])->name('blog.show');
 
