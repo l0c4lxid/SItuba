@@ -121,12 +121,6 @@ jobs:
           exclude: |
             **/.git*
             **/.github/**
-            node_modules/**
             .cpanel.yml
             **/.cpanel.yml
             **/.cpanel*
-            build/**
-            assets/**
-            vendor/**
-            pages/**
-            pdf/**
