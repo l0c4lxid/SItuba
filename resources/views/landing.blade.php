@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SITUBA Surakarta — Tuberculosis Assistant</title>
+    <title>SITUBA Surakarta | Tuberculosis Assistant</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -493,11 +493,12 @@
         }
 
         .roles-title {
-            font-size: 14px;
-            letter-spacing: 0.12em;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 0.14em;
             text-transform: uppercase;
-            color: #6b7280;
-            margin-bottom: 10px;
+            color: #1f2937;
+            margin-bottom: 16px;
         }
 
         .roles-strip {
@@ -514,16 +515,17 @@
         }
 
         .role-pill {
-            padding: 11px 13px;
-            border-radius: 16px;
+            padding: 20px 22px;
+            border-radius: 20px;
             background-color: #ffffff;
             border: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            font-size: 12px;
-            min-width: 250px;
-            box-shadow: 0 10px 26px rgba(148, 163, 184, 0.25);
+            gap: 10px;
+            font-size: 14px;
+            min-width: 340px;
+            box-shadow: 0 16px 40px rgba(148, 163, 184, 0.32);
+            transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
         }
 
         .role-pill-header {
@@ -533,26 +535,49 @@
         }
 
         .role-pill-icon {
-            width: 26px;
-            height: 26px;
+            width: 38px;
+            height: 38px;
             border-radius: 999px;
             display: grid;
             place-items: center;
             background-color: var(--bg-soft);
             color: #15803d;
-            font-size: 12px;
+            font-size: 16px;
         }
 
         .role-pill strong {
-            font-size: 13px;
+            font-size: 15px;
         }
 
         .role-pill span {
             color: var(--muted);
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
+        }
+
+        .role-pill:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 14px 36px rgba(99, 102, 241, 0.14), 0 10px 26px rgba(148, 163, 184, 0.26);
+            border-color: rgba(99, 102, 241, 0.16);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .role-pill,
+            .role-pill:hover {
+                transition: none;
+                transform: none;
+                animation: none;
+            }
+        }
+
+        .role-pill--wide {
+            min-width: 380px;
+            padding: 24px 26px;
+            gap: 12px;
+            font-size: 15px;
         }
 
         @keyframes scroll-roles {
@@ -816,7 +841,7 @@
                             <div class="timeline-content">
                                 <h4>
                                     <i class="fa-solid fa-city"></i>
-                                    Monitoring pemda
+                                    Monitoring
                                 </h4>
                                 <p>
                                     Dinas Kesehatan memonitor progres kota, memvalidasi akun fasilitas, dan memastikan
@@ -868,7 +893,7 @@
                         </div>
                         <span>Mengelola kasus, jadwal kontrol,<br> dan hasil pemeriksaan laboratorium.</span>
                     </div>
-                    <div class="role-pill">
+                    <div class="role-pill role-pill--wide">
                         <div class="role-pill-header">
                             <div class="role-pill-icon">
                                 <i class="fa-solid fa-people-roof"></i>
@@ -877,7 +902,7 @@
                         </div>
                         <span>Skrining aktif, pemetaan kontak erat,<br> dan pendampingan minum obat di lapangan.</span>
                     </div>
-                    <div class="role-pill">
+                    <div class="role-pill role-pill--wide">
                         <div class="role-pill-header">
                             <div class="role-pill-icon">
                                 <i class="fa-solid fa-user"></i>
@@ -907,7 +932,7 @@
                         </div>
                         <span>Mengelola kasus, jadwal kontrol,<br> dan hasil pemeriksaan laboratorium.</span>
                     </div>
-                    <div class="role-pill">
+                    <div class="role-pill role-pill--wide">
                         <div class="role-pill-header">
                             <div class="role-pill-icon">
                                 <i class="fa-solid fa-people-roof"></i>
@@ -916,7 +941,7 @@
                         </div>
                         <span>Skrining aktif, pemetaan kontak erat, dan pendampingan minum obat di lapangan.</span>
                     </div>
-                    <div class="role-pill">
+                    <div class="role-pill role-pill--wide">
                         <div class="role-pill-header">
                             <div class="role-pill-icon">
                                 <i class="fa-solid fa-user"></i>
