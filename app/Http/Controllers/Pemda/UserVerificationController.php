@@ -19,9 +19,22 @@ class UserVerificationController extends Controller
     {
         abort_if(auth()->user()->role !== UserRole::Pemda, 403);
 
+        $availableRoles = collect([
+            UserRole::Pasien,
+            UserRole::Kader,
+            UserRole::Puskesmas,
+            UserRole::Kelurahan,
+        ]);
+
+        $selectedRole = $request->string('role')->toString();
+        $roleFilter = $availableRoles
+            ->map(fn(UserRole $role) => $role->value)
+            ->contains($selectedRole) ? $selectedRole : null;
+
         $pendingUsers = User::query()
             ->with('detail')
             ->where('role', '!=', UserRole::Pemda->value)
+            ->when($roleFilter, fn($query) => $query->where('role', $roleFilter))
             ->when($request->filled('q'), function ($query) use ($request) {
                 $term = '%' . $request->input('q') . '%';
                 $query->where(function ($sub) use ($term) {
@@ -39,6 +52,11 @@ class UserVerificationController extends Controller
         return view('pemda.verification', [
             'records' => $pendingUsers,
             'search' => $request->input('q', ''),
+            'selectedRole' => $roleFilter,
+            'roleOptions' => $availableRoles->map(fn(UserRole $role) => [
+                'value' => $role->value,
+                'label' => $role->label(),
+            ]),
         ]);
     }
 

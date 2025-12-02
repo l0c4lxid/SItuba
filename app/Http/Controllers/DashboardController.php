@@ -102,10 +102,9 @@ class DashboardController extends Controller
 
             case UserRole::Kelurahan:
                 $kelurahan = $user;
-                $puskesmasIds = User::query()
-                    ->where('role', UserRole::Puskesmas->value)
-                    ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $kelurahan->id))
-                    ->pluck('id');
+                $kelurahan->loadMissing('detail');
+
+                $puskesmasIds = collect(optional($kelurahan->detail)->supervisor_id ? [$kelurahan->detail->supervisor_id] : []);
 
                 $kaderIds = $puskesmasIds->isEmpty()
                     ? collect()

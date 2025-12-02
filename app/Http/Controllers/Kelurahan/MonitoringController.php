@@ -14,23 +14,30 @@ class MonitoringController extends Controller
     {
         abort_if($request->user()->role !== UserRole::Kelurahan, 403);
 
-        $puskesmasList = User::query()
-            ->with('detail')
-            ->where('role', UserRole::Puskesmas->value)
-            ->whereRelation('detail', 'supervisor_id', $request->user()->id)
-            ->when($request->filled('q'), function ($query) use ($request) {
-                $term = '%' . $request->input('q') . '%';
-                $query->where(function ($sub) use ($term) {
-                    $sub->where('name', 'like', $term)
-                        ->orWhereHas('detail', function ($detail) use ($term) {
-                            $detail->where('address', 'like', $term)
-                                ->orWhere('organization', 'like', $term);
-                        });
-                });
-            })
-            ->latest()
-            ->paginate(10)
-            ->withQueryString();
+        $kelurahan = $request->user()->loadMissing('detail');
+        $puskesmasId = optional($kelurahan->detail)->supervisor_id;
+
+        $puskesmasList = $puskesmasId
+            ? User::query()
+                ->with('detail')
+                ->where('role', UserRole::Puskesmas->value)
+                ->where('id', $puskesmasId)
+                ->when($request->filled('q'), function ($query) use ($request) {
+                    $term = '%' . $request->input('q') . '%';
+                    $query->where(function ($sub) use ($term) {
+                        $sub->where('name', 'like', $term)
+                            ->orWhereHas('detail', function ($detail) use ($term) {
+                                $detail->where('address', 'like', $term)
+                                    ->orWhere('organization', 'like', $term);
+                            });
+                    });
+                })
+                ->paginate(10)
+                ->withQueryString()
+            : new LengthAwarePaginator([], 0, 10, 1, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]);
 
         return view('kelurahan.puskesmas', [
             'puskesmasList' => $puskesmasList,
@@ -44,10 +51,7 @@ class MonitoringController extends Controller
 
         $kelurahan = $request->user();
         $perPage = 10;
-        $puskesmasIds = User::query()
-            ->where('role', UserRole::Puskesmas->value)
-            ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $kelurahan->id))
-            ->pluck('id');
+        $puskesmasIds = collect(optional($kelurahan->detail)->supervisor_id ? [$kelurahan->detail->supervisor_id] : []);
 
         if ($puskesmasIds->isEmpty()) {
             $kaders = new LengthAwarePaginator([], 0, $perPage, 1, [
@@ -104,10 +108,7 @@ class MonitoringController extends Controller
 
         $kelurahan = $request->user();
         $perPage = 10;
-        $puskesmasIds = User::query()
-            ->where('role', UserRole::Puskesmas->value)
-            ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $kelurahan->id))
-            ->pluck('id');
+        $puskesmasIds = collect(optional($kelurahan->detail)->supervisor_id ? [$kelurahan->detail->supervisor_id] : []);
 
         $filterPatients = function ($query) use ($puskesmasIds, $request) {
             return $query

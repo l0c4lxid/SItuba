@@ -10,21 +10,33 @@
                             <h5 class="mb-0">Verifikasi Pengguna SITUBA</h5>
                             <p class="text-sm text-muted mb-0">Kelola status aktif pengguna sesuai kebutuhan wilayah.</p>
                         </div>
-                        <div class="d-flex flex-wrap gap-2">
-                            <form method="GET" action="{{ route('pemda.verification') }}" class="d-flex gap-2">
-                                <div class="input-group input-group-sm">
+                        <div class="d-flex flex-column flex-lg-row gap-2 w-100 align-items-stretch justify-content-end">
+                            <form method="GET" action="{{ route('pemda.verification') }}" class="d-flex flex-wrap align-items-center gap-2 flex-grow-1 justify-content-end">
+                                <div style="min-width: 180px; max-width: 220px;">
+                                    <select name="role" class="form-select form-select-sm w-100">
+                                        <option value="">Semua Peran</option>
+                                        @foreach ($roleOptions as $option)
+                                            <option value="{{ $option['value'] }}" {{ $selectedRole === $option['value'] ? 'selected' : '' }}>
+                                                {{ $option['label'] }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="input-group input-group-sm flex-grow-1" style="min-width: 260px; max-width: 460px;">
                                     <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
                                     <input type="text" name="q" class="form-control" placeholder="Cari nama / nomor HP / instansi" value="{{ $search ?? '' }}">
                                 </div>
-                                <button type="submit" class="btn btn-sm btn-primary px-3"><i class="fa fa-search me-1"></i> Cari</button>
+                                <button type="submit" class="btn btn-sm btn-primary px-3 d-flex align-items-center gap-1">
+                                    <i class="fa fa-search"></i><span>Cari</span>
+                                </button>
                             </form>
                             <form method="POST" action="{{ route('pemda.verification.bulk-status') }}" class="d-flex align-items-center gap-2" data-confirm="Terapkan perubahan status massal?" data-confirm-text="Ya, terapkan">
                                 @csrf
-                                <select name="status" class="form-select form-select-sm">
+                                <select name="status" class="form-select form-select-sm" style="min-width: 160px;">
                                     <option value="active">Aktifkan Semua</option>
                                     <option value="inactive">Nonaktifkan Semua</option>
                                 </select>
-                                <button type="submit" class="btn btn-sm btn-dark px-3"><i class="fa fa-bolt me-1"></i> Terapkan</button>
+                                <button type="submit" class="btn btn-sm btn-dark px-3 d-flex align-items-center gap-1"><i class="fa fa-bolt"></i><span>Terapkan</span></button>
                             </form>
                         </div>
                     </div>
