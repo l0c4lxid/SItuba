@@ -17,6 +17,7 @@ use App\Http\Controllers\Puskesmas\ScreeningController as PuskesmasScreeningCont
 use App\Http\Controllers\Puskesmas\TreatmentController as PuskesmasTreatmentController;
 use App\Models\User;
 use App\Enums\UserRole;
+use App\Models\NewsPost;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -28,6 +29,32 @@ Route::get('/', function () {
         'kelurahanCount' => $kelurahanCount,
     ]);
 })->name('home');
+
+Route::get('/robots.txt', function () {
+    $base = rtrim(config('app.url'), '/');
+    $lines = [
+        'User-agent: *',
+        'Allow: /',
+        "Sitemap: {$base}/sitemap.xml",
+    ];
+
+    return response(implode("\n", $lines), 200, ['Content-Type' => 'text/plain']);
+});
+
+Route::get('/sitemap.xml', function () {
+    $base = rtrim(config('app.url'), '/');
+    $posts = NewsPost::query()
+        ->where('status', 'published')
+        ->orderByDesc('published_at')
+        ->get();
+
+    return response()
+        ->view('sitemap', [
+            'base' => $base,
+            'posts' => $posts,
+        ])
+        ->header('Content-Type', 'application/xml');
+});
 Route::get('/blog', [NewsController::class, 'publicIndex'])->name('blog.index');
 Route::get('/blog/{newsPost}', [NewsController::class, 'publicShow'])->name('blog.show');
 

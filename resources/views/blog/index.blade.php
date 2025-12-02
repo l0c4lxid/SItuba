@@ -10,10 +10,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blog SITUBA - Sistem Informasi Tuberkulosis</title>
-    <meta name="description" content="Blog SITUBA berisi artikel, info kesehatan, dan testimoni seputar pemantauan Tuberkulosis oleh pasien, kader, puskesmas, kelurahan, dan pemda.">
+    <meta name="description"
+        content="Blog SITUBA berisi artikel, info kesehatan, dan testimoni seputar pemantauan Tuberkulosis oleh pasien, kader, puskesmas, kelurahan, dan pemda.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}">
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}">
     <style>
@@ -29,7 +31,10 @@
             --shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             background:
@@ -41,7 +46,10 @@
             min-height: 100vh;
         }
 
-        a { color: inherit; text-decoration: none; }
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
 
         .shell {
             max-width: 1200px;
@@ -100,8 +108,16 @@
             box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
         }
 
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12); }
-        .btn.primary { background: linear-gradient(135deg, #0ea5e9, #22c55e); color: #fff; border: none; }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #0ea5e9, #22c55e);
+            color: #fff;
+            border: none;
+        }
 
         .hero {
             background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(34, 197, 94, 0.12));
@@ -220,7 +236,9 @@
             font-size: 12px;
         }
 
-        .meta i { color: var(--primary); }
+        .meta i {
+            color: var(--primary);
+        }
 
         .card-footer {
             display: flex;
@@ -255,7 +273,8 @@
             margin-top: 28px;
         }
 
-        .pagination a, .pagination span {
+        .pagination a,
+        .pagination span {
             padding: 8px 12px;
             border-radius: 10px;
             border: 1px solid var(--border);
@@ -274,10 +293,21 @@
         }
 
         @media (max-width: 768px) {
-            header { grid-template-columns: 1fr; }
-            .cta { justify-content: flex-start; }
-            .hero { padding: 18px; }
-            .search-row { grid-template-columns: 1fr; }
+            header {
+                grid-template-columns: 1fr;
+            }
+
+            .cta {
+                justify-content: flex-start;
+            }
+
+            .hero {
+                padding: 18px;
+            }
+
+            .search-row {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -286,7 +316,9 @@
     <div class="shell">
         <header>
             <div class="brand">
-                <div class="logo">SG</div>
+                <div class="logo">
+                    <i class="fa-solid fa-lungs"></i>
+                </div>
                 <div>
                     <h1>Blog SITUBA</h1>
                     <p>Rangkuman cerita lapangan, edukasi, dan testimoni.</p>
@@ -303,7 +335,8 @@
 
         <div class="hero">
             <h2>Kasus inspiratif dan kabar terbaru eliminasi TBC.</h2>
-            <p>Temukan berita yang sudah dikurasi oleh Pemda sebelum tampil ke publik. Semuanya berasal dari kontribusi kader, puskesmas, dan pasien.</p>
+            <p>Temukan berita yang sudah dikurasi oleh Pemda sebelum tampil ke publik. Semuanya berasal dari kontribusi
+                kader, puskesmas, dan pasien.</p>
             <form class="search-row" method="GET" action="{{ route('blog.index') }}">
                 <div class="input-wrap">
                     <i class="fa fa-search"></i>
