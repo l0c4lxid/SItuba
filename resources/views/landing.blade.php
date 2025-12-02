@@ -127,15 +127,16 @@
                         </div>
                         <div class="text-glow">SITUBA</div>
                     </div>
+                    <h2 class="sr-only">Alur singkat SITUBA</h2>
 
                     <div class="timeline">
                         <div class="timeline-item">
                             <div class="timeline-step">01</div>
                             <div class="timeline-content">
-                                <h4>
+                                <h3>
                                     <i class="fa-solid fa-user-check"></i>
                                     Deteksi lapangan oleh kader
-                                </h4>
+                                </h3>
                                 <p>
                                     Kader memetakan gejala dan riwayat kontak lalu mengisi skrining cepat melalui
                                     ponsel.
@@ -146,10 +147,10 @@
                         <div class="timeline-item">
                             <div class="timeline-step">02</div>
                             <div class="timeline-content">
-                                <h4>
+                                <h3>
                                     <i class="fa-solid fa-heart-pulse"></i>
                                     Tindak lanjut puskesmas
-                                </h4>
+                                </h3>
                                 <p>
                                     Petugas puskesmas memantau hasil skrining, menjadwalkan pemeriksaan dan memulai
                                     pengobatan serta pendampingan rutin.
@@ -159,10 +160,10 @@
                         <div class="timeline-item">
                             <div class="timeline-step">03</div>
                             <div class="timeline-content">
-                                <h4>
+                                <h3>
                                     <i class="fa-solid fa-city"></i>
                                     Monitoring
-                                </h4>
+                                </h3>
                                 <p>
                                     Dinas Kesehatan memonitor progres kota, memvalidasi akun fasilitas, dan memastikan
                                     kepatuhan terapi di seluruh rantai layanan.
