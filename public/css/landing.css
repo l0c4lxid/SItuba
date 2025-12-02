@@ -152,13 +152,13 @@
             border-color: #cbd5f5;
         }
 
-        main {
-            margin-top: 32px;
-            display: grid;
-            grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-            gap: 28px;
-            align-items: center;
-        }
+main {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 28px;
+    align-items: flex-start;
+}
 
         @media (max-width: 900px) {
             main {
