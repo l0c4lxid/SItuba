@@ -460,7 +460,7 @@
             box-shadow: 0 10px 26px rgba(148, 163, 184, 0.35);
         }
 
-        .mini-card h5 {
+        .mini-card h4 {
             margin: 0 0 4px;
             font-size: 14px;
             display: inline-flex;
@@ -468,7 +468,7 @@
             gap: 6px;
         }
 
-        .mini-card h5 i {
+        .mini-card h4 i {
             font-size: 13px;
             color: #15803d;
         }

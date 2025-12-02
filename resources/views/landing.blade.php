@@ -26,9 +26,11 @@
         <header>
             <div class="brand">
                 <div class="brand-logo">
-                    {{-- <i class="fa-solid fa-lungs"></i> --}}
-                    <img src="{{ asset('assets/img/situba-logo.webp') }}" alt="SITUBA Logo" width="42" height="42"
-                        decoding="async" loading="lazy">
+                    <picture>
+                        <source srcset="{{ asset('situba-logo.webp') }}" type="image/webp">
+                        <img src="{{ asset('assets/img/situba-logo.png') }}" alt="SITUBA Logo" width="42" height="42"
+                            decoding="async" loading="lazy">
+                    </picture>
                 </div>
                 <div class="brand-text">
                     <strong>SITUBA Surakarta</strong>
@@ -174,16 +176,16 @@
 
                     <div class="hero-card-footer">
                         <div class="mini-card">
-                            <h5><i class="fa-solid fa-bell"></i> Notifikasi cepat</h5>
+                            <h4><i class="fa-solid fa-bell"></i> Notifikasi cepat</h4>
                             <p>Alert otomatis saat skrining positif, jadwal kontrol terlewat, atau obat tidak diambil.
                             </p>
                         </div>
                         <div class="mini-card">
-                            <h5><i class="fa-solid fa-gauge-high"></i> Dashboard multi-peran</h5>
+                            <h4><i class="fa-solid fa-gauge-high"></i> Dashboard multi-peran</h4>
                             <p>Tampilan disesuaikan untuk pemda, puskesmas, kelurahan, kader, dan pasien.</p>
                         </div>
                         <div class="mini-card">
-                            <h5><i class="fa-solid fa-shield-heart"></i> Data aman</h5>
+                            <h4><i class="fa-solid fa-shield-heart"></i> Data aman</h4>
                             <p>Hak akses berbasis peran, audit aktivitas, dan pengelolaan akun terpusat.</p>
                         </div>
                     </div>
