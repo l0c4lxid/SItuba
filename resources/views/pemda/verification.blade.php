@@ -26,8 +26,9 @@
                                     <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
                                     <input type="text" name="q" class="form-control" placeholder="Cari nama / nomor HP / instansi" value="{{ $search ?? '' }}">
                                 </div>
-                                <button type="submit" class="btn btn-sm btn-primary px-3 d-flex align-items-center gap-1">
-                                    <i class="fa fa-search"></i><span>Cari</span>
+                                <button type="submit" class="btn btn-group-lg btn-primary d-flex align-items-center ms-2 mt-3" style="padding:.375rem .75rem;">
+                                    {{-- <i class="fa fa-search"></i> --}}
+                                    <span class="ms-1">Cari</span>
                                 </button>
                             </form>
                             <form method="POST" action="{{ route('pemda.verification.bulk-status') }}" class="d-flex align-items-center gap-2" data-confirm="Terapkan perubahan status massal?" data-confirm-text="Ya, terapkan">
@@ -36,7 +37,7 @@
                                     <option value="active">Aktifkan Semua</option>
                                     <option value="inactive">Nonaktifkan Semua</option>
                                 </select>
-                                <button type="submit" class="btn btn-sm btn-dark px-3 d-flex align-items-center gap-1"><i class="fa fa-bolt"></i><span>Terapkan</span></button>
+                                <button type="submit" class="btn btn-sm btn-dark mt-3 px-3 d-flex align-items-center gap-1"><i class="fa fa-bolt"></i><span>Terapkan</span></button>
                             </form>
                         </div>
                     </div>

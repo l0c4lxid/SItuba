@@ -318,7 +318,8 @@
         <header>
             <div class="brand">
                 <div class="logo">
-                    <i class="fa-solid fa-lungs"></i>
+                    {{-- <i class="fa-solid fa-lungs"></i> --}}
+                    <img src="{{ asset('assets/img/situba-logo.png') }}" alt="SITUBA Logo" style="width:42px; height:auto;">
                 </div>
                 <div>
                     <h1>Blog SITUBA</h1>
