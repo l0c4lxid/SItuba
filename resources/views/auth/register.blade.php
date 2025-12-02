@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Daftar di SITUBA - Sistem Informasi Tuberkulosis terintegrasi untuk pemantauan TBC oleh pasien, kader, puskesmas, kelurahan, dan pemda.">
     <meta name="robots" content="noindex, nofollow">
-    <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('assets/img/apple-icon.png') }}">
-    <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon.ico') }}">
     <title>{{ config('app.name', 'SITUBA') }} &mdash; Registrasi</title>
     <link href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,800" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}">
@@ -107,7 +107,7 @@
         }
 
         .card h1 {
-            margin: 0 0 10px;
+            margin: 14px 0 14px;
             font-size: clamp(24px, 3vw, 30px);
             letter-spacing: -0.02em;
         }
@@ -120,7 +120,7 @@
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 14px 16px;
         }
 
@@ -133,10 +133,10 @@
         }
 
         .field-block {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(148, 163, 184, 0.35);
             border-radius: 14px;
-            padding: 10px 12px;
+            padding: 12px 14px;
             box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
         }
 
@@ -159,8 +159,8 @@
         .select {
             width: 100%;
             border-radius: 12px;
-            border: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #cbd5e1;
+            background: rgba(255, 255, 255, 0.95);
             padding: 13px 14px 13px 44px;
             font-size: 14px;
             color: var(--text);
@@ -193,6 +193,17 @@
             color: var(--primary);
             font-size: 15px;
             opacity: 0.9;
+        }
+
+        .field-block .label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .field-block .label-row .helper {
+            margin-left: 8px;
+            white-space: nowrap;
         }
 
         .label-row {
@@ -542,7 +553,7 @@
                 <div class="form-grid" style="margin-top: 16px;">
                     <div class="field-block">
                         <div class="label-row">
-                            <label for="phone">Nomor HP (username)</label>
+                            <label for="phone">Nomor HP (Username)</label>
                             <span class="helper">Gunakan format 08xxxxxxxxxx</span>
                         </div>
                         <div class="input-wrap">
@@ -553,8 +564,8 @@
                     </div>
                     <div class="field-block">
                         <div class="label-row">
-                            <label for="password">Password</label>
-                            <span class="helper">Minimal sesuai kebijakan keamanan</span>
+                            <label for="password">Masukan Password</label>
+                            <span class="helper d-lg-none">Min sesuai kebijakan keamanan</span>
                         </div>
                         <div class="input-wrap">
                             <i class="fa fa-lock input-icon"></i>
@@ -565,7 +576,7 @@
                     <div class="field-block">
                         <div class="label-row">
                             <label for="password_confirmation">Konfirmasi Password</label>
-                            <span class="helper">Ulangi password yang sama</span>
+                            <span class="helper d-lg-none">Ulangi password yang sama</span>
                         </div>
                         <div class="input-wrap">
                             <i class="fa fa-lock input-icon"></i>

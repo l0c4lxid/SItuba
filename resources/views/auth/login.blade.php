@@ -4,10 +4,11 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="SITUBA - Sistem Informasi Tuberkulosis terintegrasi. Masuk untuk mengelola pemantauan TBC: pasien, kader, puskesmas, kelurahan, hingga pemda.">
+    <meta name="description"
+        content="SITUBA - Sistem Informasi Tuberkulosis terintegrasi. Masuk untuk mengelola pemantauan TBC: pasien, kader, puskesmas, kelurahan, hingga pemda.">
     <meta name="robots" content="noindex, nofollow">
-    <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('assets/img/apple-icon.png') }}">
-    <link rel="icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon.ico') }}">
     <title>{{ config('app.name', 'SITUBA') }} &mdash; Masuk</title>
     <link href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,800" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}">
@@ -664,24 +665,24 @@
             @endif
 
                 @if ($errors->any())
-                const errors = @json($errors->all());
-                const lastPhone = @json(old('phone'));
-                if (errors.length) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Login gagal',
-                        html: `
-                                                <div class="text-start">
-                                                    <p class="mb-2">Login gagal, coba masukkan username atau password yang benar.</p>
-                                                    ${errors.length ? `<p class="mb-2 text-sm text-danger">${errors.join('<br>')}</p>` : ''}
-                                                    ${lastPhone ? `<p class="mb-0"><strong>Nomor terakhir:</strong> ${lastPhone}</p>` : ''}
-                                                </div>
-                                            `,
-                        confirmButtonText: 'Coba lagi',
-                        showCloseButton: true,
-                        confirmButtonColor: '#0ea5e9',
-                    });
-                }
+                    const errors = @json($errors->all());
+                    const lastPhone = @json(old('phone'));
+                    if (errors.length) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Login gagal',
+                            html: `
+                                                        <div class="text-start">
+                                                            <p class="mb-2">Login gagal, coba masukkan username atau password yang benar.</p>
+                                                            ${errors.length ? `<p class="mb-2 text-sm text-danger">${errors.join('<br>')}</p>` : ''}
+                                                            ${lastPhone ? `<p class="mb-0"><strong>Nomor terakhir:</strong> ${lastPhone}</p>` : ''}
+                                                        </div>
+                                                    `,
+                            confirmButtonText: 'Coba lagi',
+                            showCloseButton: true,
+                            confirmButtonColor: '#0ea5e9',
+                        });
+                    }
                 @endif
         });
     </script>
