@@ -76,18 +76,23 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/pemda/verifikasi', [UserVerificationController::class, 'index'])
         ->name('pemda.verification');
-    Route::get('/pemda/verifikasi/{user}', [UserVerificationController::class, 'show'])
-        ->name('pemda.verification.show');
-    Route::put('/pemda/verifikasi/{user}', [UserVerificationController::class, 'updateInfo'])
-        ->name('pemda.verification.update');
-    Route::put('/pemda/verifikasi/{user}/credentials', [UserVerificationController::class, 'updateCredentials'])
-        ->name('pemda.verification.credentials');
-    Route::delete('/pemda/verifikasi/{user}', [UserVerificationController::class, 'destroy'])
-        ->name('pemda.verification.destroy');
-    Route::post('/pemda/verifikasi/{user}/status', [UserVerificationController::class, 'updateStatus'])
-        ->name('pemda.verification.status');
     Route::post('/pemda/verifikasi/bulk/status', [UserVerificationController::class, 'bulkStatus'])
         ->name('pemda.verification.bulk-status');
+    Route::get('/pemda/verifikasi/{user}', [UserVerificationController::class, 'show'])
+        ->whereNumber('user')
+        ->name('pemda.verification.show');
+    Route::put('/pemda/verifikasi/{user}', [UserVerificationController::class, 'updateInfo'])
+        ->whereNumber('user')
+        ->name('pemda.verification.update');
+    Route::put('/pemda/verifikasi/{user}/credentials', [UserVerificationController::class, 'updateCredentials'])
+        ->whereNumber('user')
+        ->name('pemda.verification.credentials');
+    Route::delete('/pemda/verifikasi/{user}', [UserVerificationController::class, 'destroy'])
+        ->whereNumber('user')
+        ->name('pemda.verification.destroy');
+    Route::post('/pemda/verifikasi/{user}/status', [UserVerificationController::class, 'updateStatus'])
+        ->whereNumber('user')
+        ->name('pemda.verification.status');
 
     Route::get('/pemda/profil', [PemdaProfileController::class, 'edit'])
         ->name('pemda.profile.edit');
@@ -98,6 +103,8 @@ Route::middleware('auth')->group(function () {
         ->name('puskesmas.patients');
     Route::get('/puskesmas/pasien/{patient}/anggota', [PuskesmasPatientController::class, 'family'])
         ->name('puskesmas.patient.family');
+    Route::post('/puskesmas/pasien/{patient}/anggota', [PuskesmasPatientController::class, 'storeFamily'])
+        ->name('puskesmas.patient.family.store');
     Route::post('/puskesmas/pasien/{patient}/anggota/{member}', [PuskesmasPatientController::class, 'updateFamilyMember'])
         ->name('puskesmas.patient.family.update');
 
@@ -106,6 +113,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/puskesmas/berobat', [PuskesmasTreatmentController::class, 'index'])
         ->name('puskesmas.treatment');
+    Route::get('/puskesmas/berobat/{patient}', [PuskesmasTreatmentController::class, 'show'])
+        ->name('puskesmas.treatment.show');
     Route::post('/puskesmas/berobat/{patient}', [PuskesmasTreatmentController::class, 'updateStatus'])
         ->name('puskesmas.treatment.update');
     Route::post('/puskesmas/berobat', [PuskesmasTreatmentController::class, 'store'])

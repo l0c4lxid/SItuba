@@ -93,173 +93,9 @@
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm" role="group">
-                                                <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#treatmentModal{{ $treatment->id }}">
-                                                    Perbarui
-                                                </button>
-                                                <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#historyModal{{ $patient->id }}">
-                                                    Riwayat
-                                                </button>
-                                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#familyModal{{ $patient->id }}">
-                                                    Detail Keluarga
-                                                </button>
-                                            </div>
-                                            <div class="modal fade" id="treatmentModal{{ $treatment->id }}" tabindex="-1" aria-hidden="true">
-                                                <div class="modal-dialog">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h6 class="modal-title">Perbarui Status {{ $patient->name }}</h6>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <form method="POST" action="{{ route('puskesmas.treatment.update', $patient) }}">
-                                                            @csrf
-                                                            <div class="modal-body">
-                                                                <div class="mb-3">
-                                                                    <label class="form-label">Status Pengobatan</label>
-                                                                    <select name="status" class="form-select">
-                                                                        @foreach (['contacted' => 'Sudah Dihubungi', 'scheduled' => 'Terjadwal Datang', 'in_treatment' => 'Sedang Berobat', 'recovered' => 'Selesai / Sembuh'] as $value => $label)
-                                                                            <option value="{{ $value }}" @selected($treatment->status === $value)>{{ $label }}</option>
-                                                                        @endforeach
-                                                                    </select>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label class="form-label">Jadwal Kontrol Berikutnya</label>
-                                                                    <input type="date" name="next_follow_up_at" class="form-control" value="{{ optional($treatment->next_follow_up_at)->toDateString() }}">
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label class="form-label">Catatan</label>
-                                                                    <textarea name="treatment_notes" rows="3" class="form-control">{{ $treatment->notes }}</textarea>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                                                <button type="submit" class="btn btn-success">Simpan</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="modal fade" id="historyModal{{ $patient->id }}" tabindex="-1" aria-hidden="true">
-                                                <div class="modal-dialog modal-lg">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h6 class="modal-title">Riwayat Pengobatan {{ $patient->name }}</h6>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="table-responsive">
-                                                                <table class="table align-items-center">
-                                                                    <thead>
-                                                                        <tr>
-                                                                            <th>Status</th>
-                                                                            <th>Catatan</th>
-                                                                            <th>Jadwal Kontrol</th>
-                                                                            <th>Diperbarui</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        @foreach ($patient->treatments()->latest()->get() as $history)
-                                                                            <tr>
-                                                                                <td>
-                                                                                    <span class="badge bg-gradient-info">{{ ucfirst(str_replace('_', ' ', $history->status)) }}</span>
-                                                                                    @if ($history->completed_at)
-                                                                                        <span class="text-xs text-muted d-block">Selesai {{ $history->completed_at->format('d M Y') }}</span>
-                                                                                    @endif
-                                                                                </td>
-                                                                                <td>{{ $history->notes ?? '-' }}</td>
-                                                                                <td>{{ optional($history->next_follow_up_at)->format('d M Y') ?? '-' }}</td>
-                                                                                <td class="text-xs text-muted">{{ $history->updated_at->format('d M Y H:i') }}</td>
-                                                                            </tr>
-                                                                        @endforeach
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="modal fade" id="familyModal{{ $patient->id }}" tabindex="-1" aria-hidden="true">
-                                                <div class="modal-dialog modal-lg">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h6 class="modal-title">Detail Keluarga {{ $patient->name }}</h6>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            @if ($patient->familyMembers->isEmpty())
-                                                                <p class="text-muted mb-0">Belum ada anggota keluarga yang tercatat.</p>
-                                                            @else
-                                                                <div class="table-responsive">
-                                                                    <table class="table table-sm align-middle">
-                                                                        <thead>
-                                                                            <tr>
-                                                                                <th>Nama</th>
-                                                                                <th>NIK</th>
-                                                                                <th>Relasi</th>
-                                                                                <th>Kontak</th>
-                                                                                <th>Status Skrining</th>
-                                                                                <th>Skrining Terakhir</th>
-                                                                                <th>Ubah Status</th>
-                                                                            </tr>
-                                                                        </thead>
-                                                                        <tbody>
-                                                                            @foreach ($patient->familyMembers as $member)
-                                                                                @php
-                                                                                    $memberStatusKey = $member->screening_status ?? 'pending';
-                                                                                    $familyStatus = $familyStatuses[$memberStatusKey] ?? [
-                                                                                        'label' => ucfirst(str_replace('_', ' ', $memberStatusKey)),
-                                                                                        'badge' => 'bg-gradient-secondary',
-                                                                                    ];
-                                                                                @endphp
-                                                                                <tr>
-                                                                                    <td>
-                                                                                        <div class="fw-semibold">{{ $member->name }}</div>
-                                                                                        @if ($member->notes)
-                                                                                            <div class="text-xs text-muted">{{ $member->notes }}</div>
-                                                                                        @endif
-                                                                                    </td>
-                                                                                    <td>{{ $member->nik ?? '-' }}</td>
-                                                                                    <td>{{ $member->relation ?? '-' }}</td>
-                                                                                    <td>{{ $member->phone ?? '-' }}</td>
-                                                                                    <td>
-                                                                                        <span class="badge {{ $familyStatus['badge'] ?? 'bg-gradient-secondary' }}">{{ $familyStatus['label'] }}</span>
-                                                                                        @if ($member->converted_user_id)
-                                                                                            <span class="badge bg-gradient-success ms-1">Sudah jadi pasien</span>
-                                                                                        @endif
-                                                                                    </td>
-                                                                                    <td>
-                                                                                        @if ($member->last_screened_at)
-                                                                                            <span class="text-xs text-muted">{{ $member->last_screened_at->format('d M Y H:i') }}</span>
-                                                                                        @else
-                                                                                            <span class="text-xs text-muted">Belum ada</span>
-                                                                                        @endif
-                                                                                    </td>
-                                                                                    <td>
-                                                                                        <form method="POST" action="{{ route('puskesmas.patient.family.update', [$patient, $member]) }}" class="d-flex flex-wrap gap-2 align-items-center">
-                                                                                            @csrf
-                                                                                            <select name="screening_status" class="form-select form-select-sm">
-                                                                                                @foreach ($familyStatuses as $value => $config)
-                                                                                                    <option value="{{ $value }}" @selected($member->screening_status === $value)>{{ $config['label'] }}</option>
-                                                                                                @endforeach
-                                                                                            </select>
-                                                                                            <button type="submit" class="btn btn-sm btn-primary">Simpan</button>
-                                                                                        </form>
-                                                                                    </td>
-                                                                                </tr>
-                                                                            @endforeach
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
-                                                            @endif
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <a href="{{ route('puskesmas.patient.family', $patient) }}" class="btn btn-primary">Kelola di Halaman Anggota</a>
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                <a class="btn btn-outline-success" href="{{ route('puskesmas.treatment.show', $patient) }}">
+                                                    Kelola
+                                                </a>
                                             </div>
                                         </td>
                                     </tr>
@@ -287,8 +123,9 @@
                             </div>
                         @endif
                     </div>
-                </div>
             </div>
         </div>
     </div>
+</div>
+
 @endsection

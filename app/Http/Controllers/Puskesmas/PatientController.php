@@ -8,6 +8,7 @@ use App\Models\FamilyMember;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Carbon\Carbon;
 
 class PatientController extends Controller
 {
@@ -88,5 +89,38 @@ class PatientController extends Controller
         $member->update($validated);
 
         return back()->with('status', 'Status anggota keluarga diperbarui.');
+    }
+
+    public function storeFamily(Request $request, User $patient)
+    {
+        abort_if($request->user()->role !== UserRole::Puskesmas, 403);
+        abort_if($patient->role !== UserRole::Pasien, 404);
+
+        $patient->loadMissing(['detail.supervisor.detail']);
+        $kader = optional($patient->detail)->supervisor;
+        abort_if(!$kader, 404);
+        abort_if(optional($kader->detail)->supervisor_id !== $request->user()->id, 403);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'relation' => ['nullable', 'string', 'max:255'],
+            'nik' => ['nullable', 'string', 'max:30'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'screening_status' => ['required', 'in:pending,in_progress,suspect,clear'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        FamilyMember::create([
+            'patient_id' => $patient->id,
+            'name' => $validated['name'],
+            'relation' => $validated['relation'] ?? null,
+            'nik' => $validated['nik'] ?? null,
+            'phone' => $validated['phone'] ?? null,
+            'screening_status' => $validated['screening_status'],
+            'notes' => $validated['notes'] ?? null,
+            'last_screened_at' => null,
+        ]);
+
+        return back()->with('status', 'Anggota keluarga ditambahkan.');
     }
 }

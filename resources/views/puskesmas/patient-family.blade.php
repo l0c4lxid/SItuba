@@ -21,6 +21,43 @@
                     </div>
                     <a href="{{ url()->previous() }}" class="btn btn-sm btn-outline-secondary"><i class="fa fa-arrow-left me-1"></i> Kembali</a>
                 </div>
+                <div class="card-body border-bottom">
+                    <h6 class="mb-3">Tambah Anggota</h6>
+                    <form method="POST" action="{{ route('puskesmas.patient.family.store', $patient) }}" class="row g-3">
+                        @csrf
+                        <div class="col-md-4">
+                            <label class="form-label">Nama</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Relasi</label>
+                            <input type="text" name="relation" class="form-control" placeholder="Istri / Anak / Orang tua">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">NIK</label>
+                            <input type="text" name="nik" class="form-control" maxlength="30">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Nomor HP</label>
+                            <input type="text" name="phone" class="form-control" placeholder="08xxxx">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Status Skrining</label>
+                            <select name="screening_status" class="form-select">
+                                @foreach ($statusBadges as $value => $class)
+                                    <option value="{{ $value }}">{{ ucfirst(str_replace('_', ' ', $value)) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Catatan</label>
+                            <textarea name="notes" class="form-control" rows="2" placeholder="Kondisi singkat / rencana kunjungan"></textarea>
+                        </div>
+                        <div class="col-12 d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">Tambah Anggota</button>
+                        </div>
+                    </form>
+                </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table align-items-center mb-0">
@@ -28,6 +65,7 @@
                                 <tr>
                                     <th>Nama Anggota</th>
                                     <th>Kontak</th>
+                                    <th>Skrining Terakhir</th>
                                     <th>Status Skrining</th>
                                     <th>Catatan</th>
                                     <th>Aksi</th>
@@ -55,6 +93,13 @@
                                             <a href="{{ $waLink }}" target="_blank" class="btn btn-sm btn-success d-block mt-2">
                                                 <i class="fa-brands fa-whatsapp me-1"></i> Hubungi WA
                                             </a>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($member->last_screened_at)
+                                            <span class="text-xs text-muted">{{ $member->last_screened_at->format('d M Y H:i') }}</span>
+                                        @else
+                                            <span class="text-xs text-muted">Belum ada</span>
                                         @endif
                                     </td>
                                     <td>

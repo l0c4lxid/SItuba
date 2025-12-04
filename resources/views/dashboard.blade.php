@@ -1,9 +1,24 @@
 @extends('layouts.soft')
 
 @section('content')
+    @php
+        $cardCount = count($cards);
+        $cardColumns = [];
+        if ($cardCount === 1) {
+            $cardColumns = ['col-12 mb-4'];
+        } elseif ($cardCount === 2) {
+            $cardColumns = ['col-lg-6 col-md-6 col-12 mb-4', 'col-lg-6 col-md-6 col-12 mb-4'];
+        } elseif ($cardCount === 3) {
+            $cardColumns = ['col-lg-6 col-md-6 col-12 mb-4', 'col-lg-3 col-md-6 col-12 mb-4', 'col-lg-3 col-md-6 col-12 mb-4'];
+        } else {
+            $cardColumns = array_fill(0, $cardCount, 'col-lg-3 col-md-6 col-12 mb-4');
+        }
+    @endphp
+
     <div class="row">
         @foreach ($cards as $card)
-            <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
+            @php $colClass = $cardColumns[$loop->index] ?? 'col-lg-3 col-md-6 col-12 mb-4'; @endphp
+            <div class="{{ $colClass }}">
                 <div class="card">
                     <div class="card-body p-3">
                         <div class="row">
@@ -14,15 +29,17 @@
                                     <p class="mb-0 text-xs text-muted">
                                         {{ $card['subtitle'] ?? '' }}
                                     </p>
-                                    @if (! empty($card['trend']))
-                                        <span class="text-xs text-{{ ($card['color'] ?? 'primary') === 'danger' ? 'danger' : 'success' }} font-weight-bolder">
+                                    @if (!empty($card['trend']))
+                                        <span
+                                            class="text-xs text-{{ ($card['color'] ?? 'primary') === 'danger' ? 'danger' : 'success' }} font-weight-bolder">
                                             {{ $card['trend'] }}
                                         </span>
                                     @endif
                                 </div>
                             </div>
                             <div class="col-4 text-end">
-                                <div class="icon icon-shape bg-gradient-{{ $card['color'] ?? 'primary' }} shadow text-center border-radius-md">
+                                <div
+                                    class="icon icon-shape bg-gradient-{{ $card['color'] ?? 'primary' }} shadow text-center border-radius-md">
                                     <i class="{{ $card['icon'] ?? 'fa-solid fa-circle-info' }} text-white text-lg"></i>
                                 </div>
                             </div>
@@ -38,16 +55,25 @@
             <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
                 <div>
                     <strong>Pengingat Pengobatan:</strong>
-                    Segera datang ke {{ $treatmentReminder['puskesmas_name'] ?? 'Puskesmas rujukan' }} sesuai jadwal yang ditentukan.
+                    Segera datang ke {{ $treatmentReminder['puskesmas_name'] ?? 'Puskesmas rujukan' }} sesuai jadwal yang
+                    ditentukan.
                     <div class="text-sm mt-2 mb-0">
                         <span class="me-3"><strong>Status:</strong> {{ $treatmentReminder['status_label'] }}</span>
                         @if (!empty($treatmentReminder['schedule']))
-                            <span class="me-3"><strong>Jadwal Kontrol:</strong> {{ $treatmentReminder['schedule']->format('d M Y') }}</span>
+                            <span class="me-3"><strong>Jadwal Kontrol:</strong>
+                                {{ $treatmentReminder['schedule']->format('d M Y') }}</span>
                         @endif
-                        <span><strong>Kader:</strong> {{ $treatmentReminder['kader_name'] ?? '-' }} {{ $treatmentReminder['kader_phone'] ? '(' . $treatmentReminder['kader_phone'] . ')' : '' }}</span>
+                        <span><strong>Kader:</strong> {{ $treatmentReminder['kader_name'] ?? '-' }}
+                            {{ $treatmentReminder['kader_phone'] ? '(' . $treatmentReminder['kader_phone'] . ')' : '' }}</span>
                     </div>
                     @if (!empty($treatmentReminder['notes']))
                         <p class="text-xs text-muted mb-0 mt-2">{{ $treatmentReminder['notes'] }}</p>
+                    @endif
+                    @if ($user->role === \App\Enums\UserRole::Pasien && in_array(optional($user->treatments()->latest()->first())->status ?? 'none', ['contacted', 'scheduled']))
+                        <p class="mb-0 mt-3">
+                            <strong>Perhatian!</strong> Anda terindikasi Suspek TBC. Segera hubungi kader dan tambahkan anggota
+                            keluarga yang mungkin terpapar.
+                        </p>
                     @endif
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
@@ -57,63 +83,84 @@
                     <a href="{{ route('patient.family') }}" class="btn btn-sm btn-warning">
                         <i class="fa-solid fa-users me-1"></i> Pantau Anggota
                     </a>
+                    @if ($user->role === \App\Enums\UserRole::Pasien)
+                        @if (!($hasSelfScreening ?? false))
+                            <a href="{{ route('patient.screening') }}" class="btn btn-sm btn-outline-danger">
+                                <i class="fa-solid fa-notes-medical me-1"></i> Skrining Mandiri
+                            </a>
+                        @else
+                            <button class="btn btn-sm btn-outline-secondary" disabled>
+                                <i class="fa-solid fa-check me-1"></i> Skrining sudah dilakukan
+                            </button>
+                        @endif
+                    @endif
                 </div>
             </div>
         </div>
     @endif
 
     @if ($dashboardCharts && count($dashboardCharts['screening'] ?? []))
-        <div class="row mt-4">
-            <div class="col-lg-6 mb-4">
+        <div class="row g-4">
+            <div class="col-12 col-xl-6">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-header">
                         <h6 class="mb-0">Skrining per Bulan</h6>
                         <p class="text-sm text-muted mb-0">
-                            Total skrining 12 bulan terakhir ({{ $user->role === \App\Enums\UserRole::Pemda ? 'seluruh kota' : 'kelurahan ini' }}).
+                            Total skrining 12 bulan terakhir
+                            ({{ $user->role === \App\Enums\UserRole::Pemda ? 'seluruh kota' : 'kelurahan ini' }}).
                         </p>
                     </div>
                     <div class="card-body">
-                        <canvas id="pemdaScreeningChart" height="200"></canvas>
+                        <canvas id="pemdaScreeningChart" height="260"></canvas>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6 mb-4">
+            <div class="col-12 col-xl-6">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-header">
                         <h6 class="mb-0">Kasus Suspek TBC</h6>
                         <p class="text-sm text-muted mb-0">Jumlah pasien indicasi ≥ 2 jawaban "Ya" per bulan.</p>
                     </div>
                     <div class="card-body">
-                        <canvas id="pemdaTbcChart" height="200"></canvas>
+                        <canvas id="pemdaTbcChart" height="260"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-12 col-xl-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0">Cakupan Skrining (Aktif vs Belum)</h6>
+                        <p class="text-sm text-muted mb-0">Perbandingan pasien aktif yang sudah skrining vs belum, 12 bulan
+                            terakhir.</p>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="coverageChart" height="260"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-xl-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0">Suspek vs Non Suspek</h6>
+                        <p class="text-sm text-muted mb-0">Distribusi hasil skrining (≥2 "Ya" dianggap suspek).</p>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="suspectSplitChart" height="260"></canvas>
                     </div>
                 </div>
             </div>
         </div>
     @endif
 
-    @if ($user->role === \App\Enums\UserRole::Pasien && in_array(optional($user->treatments()->latest()->first())->status ?? 'none', ['contacted', 'scheduled']))
-        <div class="alert alert-warning mt-4" role="alert">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-                <div>
-                    <strong>Perhatian!</strong> Anda terindikasi Suspek TBC. Segera hubungi kader dan tambahkan anggota keluarga yang mungkin terpapar.
-                </div>
-                <div class="d-flex gap-2">
-                    <a href="{{ route('patient.family') }}" class="btn btn-sm btn-outline-danger">
-                        <i class="fa-solid fa-users me-1"></i> Kelola Anggota Risiko
-                    </a>
-                    <a href="{{ route('patient.screening') }}" class="btn btn-sm btn-danger">
-                        <i class="fa-solid fa-notes-medical me-1"></i> Lakukan Skrining Mandiri
-                    </a>
-                </div>
-            </div>
-        </div>
-    @endif
 
     @if ($user->role === \App\Enums\UserRole::Puskesmas && isset($mutedFollowUps) && $mutedFollowUps->isNotEmpty())
         <div class="alert alert-info mt-4" role="alert">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                 <div>
-                    <strong>Pengingat!</strong> Ada keluarga yang belum semua anggota melakukan skrining/pengobatan. Tindaklanjuti segera.
+                    <strong>Pengingat!</strong> Ada keluarga yang belum semua anggota melakukan skrining/pengobatan.
+                    Tindaklanjuti segera.
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
                     @foreach ($mutedFollowUps->take(3) as $patient)
@@ -145,22 +192,29 @@
                             <table class="table align-items-center mb-0">
                                 <thead>
                                     <tr>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Pasien</th>
-                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Kader</th>
-                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Jawaban Ya</th>
-                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Waktu</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Pasien
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                            Kader</th>
+                                        <th
+                                            class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            Jawaban Ya</th>
+                                        <th
+                                            class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            Waktu</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($recentScreenings as $screening)
                                         @php
-                                            $positiveCount = collect($screening->answers ?? [])->filter(fn ($answer) => $answer === 'ya')->count();
+                                            $positiveCount = collect($screening->answers ?? [])->filter(fn($answer) => $answer === 'ya')->count();
                                         @endphp
                                         <tr>
                                             <td>
                                                 <div class="d-flex flex-column">
                                                     <span class="text-sm fw-semibold">{{ $screening->patient->name }}</span>
-                                                    <span class="text-xs text-muted">{{ $screening->patient->detail->address ?? '-' }}</span>
+                                                    <span
+                                                        class="text-xs text-muted">{{ $screening->patient->detail->address ?? '-' }}</span>
                                                 </div>
                                             </td>
                                             <td>
@@ -170,10 +224,12 @@
                                                 </div>
                                             </td>
                                             <td class="text-center">
-                                                <span class="badge bg-gradient-{{ $positiveCount ? 'danger' : 'success' }}">{{ $positiveCount }}</span>
+                                                <span
+                                                    class="badge bg-gradient-{{ $positiveCount ? 'danger' : 'success' }}">{{ $positiveCount }}</span>
                                             </td>
                                             <td class="text-center">
-                                                <span class="text-xs text-muted">{{ $screening->created_at->format('d M Y H:i') }}</span>
+                                                <span
+                                                    class="text-xs text-muted">{{ $screening->created_at->format('d M Y H:i') }}</span>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -208,6 +264,8 @@
             document.addEventListener('DOMContentLoaded', function () {
                 const screeningDataset = @json($dashboardCharts['screening'] ?? []);
                 const tbcDataset = @json($dashboardCharts['tbc_cases'] ?? []);
+                const coverageDataset = @json($dashboardCharts['coverage'] ?? []);
+                const suspectSplitDataset = @json($dashboardCharts['suspect_split'] ?? []);
 
                 const screeningCtx = document.getElementById('pemdaScreeningChart');
                 if (screeningCtx && screeningDataset.length) {
@@ -252,6 +310,64 @@
                             responsive: true,
                             scales: {
                                 y: { beginAtZero: true },
+                            },
+                        },
+                    });
+                }
+
+                const coverageCtx = document.getElementById('coverageChart');
+                if (coverageCtx && coverageDataset.length) {
+                    new Chart(coverageCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: coverageDataset.map(item => item.label),
+                            datasets: [
+                                {
+                                    label: 'Sudah Skrining',
+                                    data: coverageDataset.map(item => item.done),
+                                    backgroundColor: 'rgba(25, 135, 84, 0.75)',
+                                },
+                                {
+                                    label: 'Belum Skrining',
+                                    data: coverageDataset.map(item => item.pending),
+                                    backgroundColor: 'rgba(255, 193, 7, 0.75)',
+                                },
+                            ],
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: { beginAtZero: true, stacked: true },
+                                x: { stacked: true },
+                            },
+                        },
+                    });
+                }
+
+                const suspectCtx = document.getElementById('suspectSplitChart');
+                if (suspectCtx && suspectSplitDataset.length) {
+                    new Chart(suspectCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: suspectSplitDataset.map(item => item.label),
+                            datasets: [
+                                {
+                                    label: 'Suspek (≥2 Ya)',
+                                    data: suspectSplitDataset.map(item => item.suspect),
+                                    backgroundColor: 'rgba(220, 53, 69, 0.75)',
+                                },
+                                {
+                                    label: 'Non Suspek',
+                                    data: suspectSplitDataset.map(item => item.non_suspect),
+                                    backgroundColor: 'rgba(54, 162, 235, 0.75)',
+                                },
+                            ],
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: { beginAtZero: true, stacked: true },
+                                x: { stacked: true },
                             },
                         },
                     });

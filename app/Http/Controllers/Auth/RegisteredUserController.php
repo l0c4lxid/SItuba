@@ -135,6 +135,6 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        return redirect()->route('login')->with('status', 'Akun berhasil dibuat. Tunggu verifikasi dari Pemda sebelum bisa login.');
+        return redirect()->route('login')->with('status', 'Akun berhasil dibuat. Tunggu verifikasi dari yang berwenang sebelum bisa login.');
     }
 }

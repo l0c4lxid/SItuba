@@ -35,7 +35,13 @@
             @php
                 $currentUrl = url()->current();
                 $base = rtrim($item['url'] ?? '#', '/');
-                $isActive = $base !== '#' && ($currentUrl === ($item['url'] ?? '') || str_starts_with($currentUrl, $base . '/'));
+                $activeRoutes = $item['active_routes'] ?? [];
+                $isActive = false;
+                if (!empty($activeRoutes) && request()->route()) {
+                    $isActive = request()->routeIs($activeRoutes);
+                } elseif ($base !== '#') {
+                    $isActive = $currentUrl === ($item['url'] ?? '') || str_starts_with($currentUrl, $base . '/');
+                }
                 $description = $navDescriptions[$item['icon'] ?? ''] ?? 'Lihat detail dan tindak lanjut';
             @endphp
             <a class="soft-sidebar__link {{ $isActive ? 'is-active' : '' }}" href="{{ $item['url'] }}"

@@ -17,6 +17,8 @@ class DashboardController extends Controller
         $cards = [];
         $recentScreenings = null;
         $mutedFollowUps = collect();
+        $hasSelfScreening = false;
+        $recentLimit = 3;
 
         $baseScreeningQuery = PatientScreening::query()
             ->with([
@@ -36,6 +38,12 @@ class DashboardController extends Controller
                 $puskesmasCount = User::where('role', UserRole::Puskesmas->value)->count();
                 $kaderCount = User::where('role', UserRole::Kader->value)->count();
                 $patientCount = User::where('role', UserRole::Pasien->value)->count();
+                $activePatients = User::query()
+                    ->where('role', UserRole::Pasien->value)
+                    ->where('is_active', true)
+                    ->get(['id', 'created_at']);
+                $activePatientIds = $activePatients->pluck('id');
+                $patientCreatedAt = $activePatients->mapWithKeys(fn($patient) => [$patient->id => $patient->created_at]);
                 $totalScreenings = PatientScreening::count();
 
                 $cards = [
@@ -48,9 +56,9 @@ class DashboardController extends Controller
                         'color' => 'primary',
                     ],
                     [
-                        'label' => 'Puskesmas Terdaftar',
+                        'label' => 'Puskesmas',
                         'value' => number_format($puskesmasCount),
-                        'subtitle' => 'Kemitraan wilayah Surakarta',
+                        'subtitle' => 'Kemitraan Terdaftar',
                         'trend' => $kaderCount . ' kader aktif',
                         'icon' => 'fa-solid fa-hospital',
                         'color' => 'success',
@@ -65,7 +73,7 @@ class DashboardController extends Controller
                     ],
                 ];
 
-                $recentScreenings = $baseScreeningQuery->paginate(5);
+                $recentScreenings = $baseScreeningQuery->paginate($recentLimit);
 
                 $chartMonths = collect(range(0, 11))
                     ->map(fn($i) => now()->startOfMonth()->subMonths($i))
@@ -79,12 +87,15 @@ class DashboardController extends Controller
                 foreach ($screeningsInRange as $screening) {
                     $key = $screening->created_at->format('Y-m');
                     if (!isset($monthlyAggregates[$key])) {
-                        $monthlyAggregates[$key] = ['screening' => 0, 'suspect' => 0];
+                        $monthlyAggregates[$key] = ['screening' => 0, 'suspect' => 0, 'patients' => []];
                     }
                     $monthlyAggregates[$key]['screening']++;
                     $positive = collect($screening->answers ?? [])->filter(fn($ans) => $ans === 'ya')->count();
                     if ($positive >= 2) {
                         $monthlyAggregates[$key]['suspect']++;
+                    }
+                    if ($activePatientIds->contains($screening->patient_id)) {
+                        $monthlyAggregates[$key]['patients'][$screening->patient_id] = true;
                     }
                 }
 
@@ -97,6 +108,34 @@ class DashboardController extends Controller
                         'label' => $date->format('M Y'),
                         'value' => $monthlyAggregates[$date->format('Y-m')]['suspect'] ?? 0,
                     ])->values(),
+                    'coverage' => $chartMonths->map(function ($date) use ($monthlyAggregates, $activePatients, $patientCreatedAt) {
+                        $key = $date->format('Y-m');
+                        $cutoff = $date->endOfMonth();
+                        $activeCount = $activePatients->filter(fn($patient) => $patient->created_at->lte($cutoff))->count();
+                        $done = isset($monthlyAggregates[$key]['patients'])
+                            ? collect(array_keys($monthlyAggregates[$key]['patients']))
+                                ->filter(fn($id) => isset($patientCreatedAt[$id]) && $patientCreatedAt[$id]->lte($cutoff))
+                                ->count()
+                            : 0;
+                        $pending = max($activeCount - $done, 0);
+
+                        return [
+                            'label' => $date->format('M Y'),
+                            'done' => $done,
+                            'pending' => $pending,
+                        ];
+                    })->values(),
+                    'suspect_split' => $chartMonths->map(function ($date) use ($monthlyAggregates) {
+                        $key = $date->format('Y-m');
+                        $suspect = $monthlyAggregates[$key]['suspect'] ?? 0;
+                        $total = $monthlyAggregates[$key]['screening'] ?? 0;
+                        $nonSuspect = max($total - $suspect, 0);
+                        return [
+                            'label' => $date->format('M Y'),
+                            'suspect' => $suspect,
+                            'non_suspect' => $nonSuspect,
+                        ];
+                    })->values(),
                 ];
                 break;
 
@@ -113,12 +152,17 @@ class DashboardController extends Controller
                         ->whereHas('detail', fn($detail) => $detail->whereIn('supervisor_id', $puskesmasIds))
                         ->pluck('id');
 
-                $patientIds = $kaderIds->isEmpty()
+                $activePatients = $kaderIds->isEmpty()
                     ? collect()
                     : User::query()
                         ->where('role', UserRole::Pasien->value)
+                        ->where('is_active', true)
                         ->whereHas('detail', fn($detail) => $detail->whereIn('supervisor_id', $kaderIds))
-                        ->pluck('id');
+                        ->get(['id', 'created_at']);
+                $patientIds = $activePatients instanceof \Illuminate\Support\Collection ? $activePatients->pluck('id') : collect();
+                $patientCreatedAt = $activePatients instanceof \Illuminate\Support\Collection
+                    ? $activePatients->mapWithKeys(fn($patient) => [$patient->id => $patient->created_at])
+                    : collect();
 
                 $cards = [
                     [
@@ -149,7 +193,7 @@ class DashboardController extends Controller
 
                 $recentScreenings = $patientIds->isEmpty()
                     ? null
-                    : $baseScreeningQuery->whereIn('patient_id', $patientIds)->paginate(5);
+                    : $baseScreeningQuery->whereIn('patient_id', $patientIds)->paginate($recentLimit);
 
                 $chartMonths = collect(range(0, 11))
                     ->map(fn($i) => now()->startOfMonth()->subMonths($i))
@@ -166,13 +210,14 @@ class DashboardController extends Controller
                 foreach ($screeningsInRange as $screening) {
                     $key = $screening->created_at->format('Y-m');
                     if (!isset($monthlyAggregates[$key])) {
-                        $monthlyAggregates[$key] = ['screening' => 0, 'suspect' => 0];
+                        $monthlyAggregates[$key] = ['screening' => 0, 'suspect' => 0, 'patients' => []];
                     }
                     $monthlyAggregates[$key]['screening']++;
                     $positive = collect($screening->answers ?? [])->filter(fn($ans) => $ans === 'ya')->count();
                     if ($positive >= 2) {
                         $monthlyAggregates[$key]['suspect']++;
                     }
+                    $monthlyAggregates[$key]['patients'][$screening->patient_id] = true;
                 }
 
                 $dashboardCharts = [
@@ -184,6 +229,34 @@ class DashboardController extends Controller
                         'label' => $date->format('M Y'),
                         'value' => $monthlyAggregates[$date->format('Y-m')]['suspect'] ?? 0,
                     ])->values(),
+                    'coverage' => $chartMonths->map(function ($date) use ($monthlyAggregates, $activePatients, $patientCreatedAt) {
+                        $key = $date->format('Y-m');
+                        $cutoff = $date->endOfMonth();
+                        $activeCount = $activePatients->filter(fn($patient) => $patient->created_at->lte($cutoff))->count();
+                        $done = isset($monthlyAggregates[$key]['patients'])
+                            ? collect(array_keys($monthlyAggregates[$key]['patients']))
+                                ->filter(fn($id) => isset($patientCreatedAt[$id]) && $patientCreatedAt[$id]->lte($cutoff))
+                                ->count()
+                            : 0;
+                        $pending = max($activeCount - $done, 0);
+
+                        return [
+                            'label' => $date->format('M Y'),
+                            'done' => $done,
+                            'pending' => $pending,
+                        ];
+                    })->values(),
+                    'suspect_split' => $chartMonths->map(function ($date) use ($monthlyAggregates) {
+                        $key = $date->format('Y-m');
+                        $suspect = $monthlyAggregates[$key]['suspect'] ?? 0;
+                        $total = $monthlyAggregates[$key]['screening'] ?? 0;
+                        $nonSuspect = max($total - $suspect, 0);
+                        return [
+                            'label' => $date->format('M Y'),
+                            'suspect' => $suspect,
+                            'non_suspect' => $nonSuspect,
+                        ];
+                    })->values(),
                 ];
                 break;
 
@@ -193,10 +266,13 @@ class DashboardController extends Controller
                     ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $user->id))
                     ->pluck('id');
 
-                $patientIds = User::query()
+                $activePatients = User::query()
                     ->where('role', UserRole::Pasien->value)
+                    ->where('is_active', true)
                     ->whereHas('detail', fn($detail) => $detail->whereIn('supervisor_id', $kaderIds))
-                    ->pluck('id');
+                    ->get(['id', 'created_at']);
+                $patientIds = $activePatients->pluck('id');
+                $patientCreatedAt = $activePatients->mapWithKeys(fn($patient) => [$patient->id => $patient->created_at]);
 
                 $totalKader = $kaderIds->count();
                 $totalPatients = $patientIds->count();
@@ -225,7 +301,7 @@ class DashboardController extends Controller
 
                 $recentScreenings = $patientIds->isEmpty()
                     ? null
-                    : $baseScreeningQuery->whereIn('patient_id', $patientIds)->paginate(5);
+                    : $baseScreeningQuery->whereIn('patient_id', $patientIds)->paginate($recentLimit);
 
                 $mutedFollowUps = User::query()
                     ->with(['detail', 'familyMembers'])
@@ -260,13 +336,14 @@ class DashboardController extends Controller
                 foreach ($screeningsInRange as $screening) {
                     $key = $screening->created_at->format('Y-m');
                     if (!isset($monthlyAggregates[$key])) {
-                        $monthlyAggregates[$key] = ['screening' => 0, 'suspect' => 0];
+                        $monthlyAggregates[$key] = ['screening' => 0, 'suspect' => 0, 'patients' => []];
                     }
                     $monthlyAggregates[$key]['screening']++;
                     $positive = collect($screening->answers ?? [])->filter(fn($ans) => $ans === 'ya')->count();
                     if ($positive >= 2) {
                         $monthlyAggregates[$key]['suspect']++;
                     }
+                    $monthlyAggregates[$key]['patients'][$screening->patient_id] = true;
                 }
 
                 $dashboardCharts = [
@@ -278,6 +355,33 @@ class DashboardController extends Controller
                         'label' => $date->format('M Y'),
                         'value' => $monthlyAggregates[$date->format('Y-m')]['suspect'] ?? 0,
                     ])->values(),
+                    'coverage' => $chartMonths->map(function ($date) use ($monthlyAggregates, $patientIds, $activePatients, $patientCreatedAt) {
+                        $key = $date->format('Y-m');
+                        $cutoff = $date->endOfMonth();
+                        $activeCount = $activePatients->filter(fn($patient) => $patient->created_at->lte($cutoff))->count();
+                        $done = isset($monthlyAggregates[$key]['patients'])
+                            ? collect(array_keys($monthlyAggregates[$key]['patients']))
+                                ->filter(fn($id) => isset($patientCreatedAt[$id]) && $patientCreatedAt[$id]->lte($cutoff))
+                                ->count()
+                            : 0;
+                        $pending = max($activeCount - $done, 0);
+                        return [
+                            'label' => $date->format('M Y'),
+                            'done' => $done,
+                            'pending' => $pending,
+                        ];
+                    })->values(),
+                    'suspect_split' => $chartMonths->map(function ($date) use ($monthlyAggregates) {
+                        $key = $date->format('Y-m');
+                        $suspect = $monthlyAggregates[$key]['suspect'] ?? 0;
+                        $total = $monthlyAggregates[$key]['screening'] ?? 0;
+                        $nonSuspect = max($total - $suspect, 0);
+                        return [
+                            'label' => $date->format('M Y'),
+                            'suspect' => $suspect,
+                            'non_suspect' => $nonSuspect,
+                        ];
+                    })->values(),
                 ];
                 break;
 
@@ -313,11 +417,12 @@ class DashboardController extends Controller
 
                 $recentScreenings = $patientIds->isEmpty()
                     ? null
-                    : $baseScreeningQuery->whereIn('patient_id', $patientIds)->paginate(5);
+                    : $baseScreeningQuery->whereIn('patient_id', $patientIds)->paginate($recentLimit);
                 break;
 
             case UserRole::Pasien:
                 $latestScreening = $user->screenings()->latest()->first();
+                $hasSelfScreening = (bool) $latestScreening;
                 $cards = [
                     [
                         'label' => 'Status Akun',
@@ -351,7 +456,7 @@ class DashboardController extends Controller
                         'color' => 'primary',
                     ],
                 ];
-                $recentScreenings = $baseScreeningQuery->paginate(5);
+                $recentScreenings = $baseScreeningQuery->paginate($recentLimit);
                 break;
         }
 
@@ -395,6 +500,7 @@ class DashboardController extends Controller
             'recentScreenings' => $recentScreenings,
             'treatmentReminder' => $treatmentReminder,
             'dashboardCharts' => $dashboardCharts,
+            'hasSelfScreening' => $hasSelfScreening,
         ]);
     }
 }

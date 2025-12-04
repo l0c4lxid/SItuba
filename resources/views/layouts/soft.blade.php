@@ -6,11 +6,11 @@
     $role = $user?->role;
     $navPresets = [
         UserRole::Pasien->value => [
-            ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
-            ['label' => 'Skrining', 'url' => route('patient.screening'), 'icon' => 'screening'],
-            ['label' => 'Anggota Keluarga', 'url' => route('patient.family'), 'icon' => 'anggota'],
-            ['label' => 'Materi', 'url' => route('patient.materi'), 'icon' => 'materi'],
-            ['label' => 'Berita', 'url' => route('news.index'), 'icon' => 'news'],
+            ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard', 'active_routes' => ['dashboard']],
+            ['label' => 'Skrining', 'url' => route('patient.screening'), 'icon' => 'screening', 'active_routes' => ['patient.screening', 'patient.screening.store']],
+            ['label' => 'Anggota Keluarga', 'url' => route('patient.family'), 'icon' => 'anggota', 'active_routes' => ['patient.family', 'patient.family.store', 'patient.family.screening', 'patient.family.screening.store']],
+            ['label' => 'Materi', 'url' => route('patient.materi'), 'icon' => 'materi', 'active_routes' => ['patient.materi']],
+            ['label' => 'Berita', 'url' => route('news.index'), 'icon' => 'news', 'active_routes' => ['news.index', 'news.create', 'news.edit']],
         ],
         UserRole::Puskesmas->value => [
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
@@ -49,11 +49,15 @@
     $currentUrl = url()->current();
     $activeNavItem = collect($navItems)
         ->first(function ($item) use ($currentUrl) {
-            if (($item['url'] ?? '#') === '#') {
+            $base = rtrim($item['url'] ?? '#', '/');
+            $routes = $item['active_routes'] ?? [];
+            if (!empty($routes) && request()->route()) {
+                return request()->routeIs($routes);
+            }
+            if ($base === '#') {
                 return false;
             }
-            $base = rtrim($item['url'], '/');
-            return $currentUrl === $item['url'] || str_starts_with($currentUrl, $base . '/');
+            return $currentUrl === ($item['url'] ?? '') || str_starts_with($currentUrl, $base . '/');
         });
     $navTitle = $activeNavItem['label'] ?? ($navItems[0]['label'] ?? 'Dashboard');
 

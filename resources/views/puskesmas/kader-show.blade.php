@@ -54,13 +54,22 @@
                             {{ $kader->is_active ? 'Nonaktifkan Kader' : 'Aktifkan Kader' }}
                         </button>
                     </form>
-                    @if (session('status'))
-                        <div class="alert alert-success text-sm mt-3 mb-0">
-                            {{ session('status') }}
-                        </div>
-                    @endif
                 </div>
             </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    @if (session('status'))
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: @json(session('status')),
+                });
+            });
+        </script>
+    @endif
+@endpush

@@ -120,6 +120,38 @@ class TreatmentController extends Controller
         return back()->with('status', 'Status pengobatan pasien diperbarui.');
     }
 
+    public function show(Request $request, User $patient)
+    {
+        abort_if($request->user()->role !== UserRole::Puskesmas, 403);
+        abort_if($patient->role !== UserRole::Pasien, 404);
+
+        $patient->loadMissing([
+            'detail.supervisor.detail',
+            'screenings' => fn($q) => $q->latest()->limit(1),
+            'treatments' => fn($q) => $q->latest(),
+            'familyMembers' => fn($q) => $q->orderBy('name'),
+        ]);
+
+        $kader = optional($patient->detail)->supervisor;
+        abort_if(!$kader, 404);
+        abort_if(optional($kader->detail)->supervisor_id !== $request->user()->id, 403);
+
+        $familyStatuses = [
+            'pending' => ['label' => 'Belum Ditindaklanjuti', 'badge' => 'bg-gradient-secondary'],
+            'in_progress' => ['label' => 'Dalam Pemantauan', 'badge' => 'bg-gradient-warning text-dark'],
+            'suspect' => ['label' => 'Suspek TBC', 'badge' => 'bg-gradient-danger'],
+            'clear' => ['label' => 'Tidak Ada Gejala', 'badge' => 'bg-gradient-success'],
+        ];
+
+        $treatment = $patient->treatments->first();
+
+        return view('puskesmas.treatment-detail', [
+            'patient' => $patient,
+            'treatment' => $treatment,
+            'familyStatuses' => $familyStatuses,
+        ]);
+    }
+
     public function store(Request $request)
     {
         abort_if($request->user()->role !== UserRole::Puskesmas, 403);

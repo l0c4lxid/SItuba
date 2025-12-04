@@ -280,9 +280,9 @@
             const nameLabel = document.getElementById('name-label');
             const defaultLabel = nameLabel?.dataset.default ?? nameLabel?.textContent;
             const labelMap = {
-                kelurahan: 'Nama Penanggung Jawab Kelurahan',
-                puskesmas: 'Nama Penanggung Jawab Puskesmas',
-                kader: 'Nama Penanggung Jawab Kader',
+                kelurahan: 'Nama PJ Kelurahan',
+                puskesmas: 'Nama PJ Puskesmas',
+                kader: 'Nama Kader',
                 pasien: 'Nama Pasien',
             };
 
