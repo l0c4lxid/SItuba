@@ -33,6 +33,7 @@
                             </form>
                             <form method="POST" action="{{ route('pemda.verification.bulk-status') }}" class="d-flex align-items-center gap-2" data-confirm="Terapkan perubahan status massal?" data-confirm-text="Ya, terapkan">
                                 @csrf
+                                <input type="hidden" name="role" value="{{ $selectedRole }}">
                                 <select name="status" class="form-select form-select-sm" style="min-width: 160px;">
                                     <option value="active">Aktifkan Semua</option>
                                     <option value="inactive">Nonaktifkan Semua</option>

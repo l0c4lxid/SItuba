@@ -36,4 +36,37 @@ class KaderController extends Controller
             'search' => $request->input('q', ''),
         ]);
     }
+
+    public function show(Request $request, User $kader)
+    {
+        abort_if($request->user()->role !== UserRole::Puskesmas, 403);
+        abort_if($kader->role !== UserRole::Kader, 404);
+
+        $kader->loadMissing('detail.supervisor');
+
+        abort_if(optional($kader->detail)->supervisor_id !== $request->user()->id, 403);
+
+        return view('puskesmas.kader-show', [
+            'kader' => $kader,
+        ]);
+    }
+
+    public function updateStatus(Request $request, User $kader)
+    {
+        abort_if($request->user()->role !== UserRole::Puskesmas, 403);
+        abort_if($kader->role !== UserRole::Kader, 404);
+
+        $kader->loadMissing('detail');
+
+        abort_if(optional($kader->detail)->supervisor_id !== $request->user()->id, 403);
+
+        $validated = $request->validate([
+            'status' => ['required', 'in:active,inactive'],
+        ]);
+
+        $kader->is_active = $validated['status'] === 'active';
+        $kader->save();
+
+        return back()->with('status', 'Status kader diperbarui.');
+    }
 }

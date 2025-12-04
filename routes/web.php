@@ -113,6 +113,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/puskesmas/kader', [PuskesmasKaderController::class, 'index'])
         ->name('puskesmas.kaders');
+    Route::get('/puskesmas/kader/{kader}', [PuskesmasKaderController::class, 'show'])
+        ->name('puskesmas.kaders.show');
+    Route::post('/puskesmas/kader/{kader}/status', [PuskesmasKaderController::class, 'updateStatus'])
+        ->name('puskesmas.kaders.status');
 
     Route::get('/kelurahan/puskesmas', [KelurahanMonitoringController::class, 'puskesmas'])
         ->name('kelurahan.puskesmas');

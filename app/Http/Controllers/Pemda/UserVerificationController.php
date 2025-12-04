@@ -210,10 +210,25 @@ class UserVerificationController extends Controller
 
         $validated = $request->validate([
             'status' => ['required', 'in:active,inactive'],
+            'role' => ['nullable', Rule::in([
+                UserRole::Pasien->value,
+                UserRole::Kader->value,
+                UserRole::Puskesmas->value,
+                UserRole::Kelurahan->value,
+            ])],
         ]);
 
-        User::where('role', '!=', UserRole::Pemda->value)
-            ->update(['is_active' => $validated['status'] === 'active']);
+        $ids = User::query()
+            ->select('id')
+            ->where('role', '!=', UserRole::Pemda->value)
+            ->when($validated['role'] ?? null, fn ($query, $role) => $query->where('role', $role))
+            ->pluck('id');
+
+        if ($ids->isEmpty()) {
+            return back()->with('status', 'Tidak ada pengguna yang diubah.');
+        }
+
+        User::whereIn('id', $ids)->update(['is_active' => $validated['status'] === 'active']);
 
         return back()->with('status', 'Semua status pengguna berhasil diperbarui.');
     }

@@ -28,6 +28,7 @@
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Catatan</th>
                                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
                                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Didaftarkan</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -57,10 +58,15 @@
                                         <td class="text-center">
                                             <span class="text-xs text-muted">{{ $kader->created_at->format('d M Y') }}</span>
                                         </td>
+                                        <td class="text-center">
+                                            <a href="{{ route('puskesmas.kaders.show', $kader) }}" class="btn btn-sm btn-outline-primary px-3">
+                                                Detail & Kelola
+                                            </a>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center py-4 text-muted">Belum ada kader mitra.</td>
+                                        <td colspan="7" class="text-center py-4 text-muted">Belum ada kader mitra.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
