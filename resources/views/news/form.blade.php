@@ -3,6 +3,7 @@
 
     $user = auth()->user();
     $isPemda = $user?->role === UserRole::Pemda;
+    $isPuskesmas = $user?->role === UserRole::Puskesmas;
     $statusBadge = $post->status === 'published' ? 'bg-success' : 'bg-warning text-dark';
 @endphp
 
@@ -19,7 +20,7 @@
                     <div>
                         <h5 class="mb-1">{{ $isEdit ? 'Edit Berita' : 'Tulis Berita Baru' }}</h5>
                         <p class="text-sm text-muted mb-0">
-                            Isi judul, unggah gambar utama, dan konten berita atau testimoni. Berita akan tayang setelah dipublikasikan oleh Pemda.
+                            Isi judul, unggah gambar utama, dan konten berita atau testimoni. Puskesmas dapat menerbitkan langsung; konten lain menunggu publikasi admin.
                         </p>
                     </div>
                 </div>
@@ -55,14 +56,14 @@
                                 <div class="col-12">
                                     <div class="d-inline-flex align-items-center gap-2 px-3 py-2 border rounded">
                                         <span class="badge {{ $statusBadge }}">
-                                            {{ $post->status === 'published' ? 'Sudah tayang' : 'Menunggu Pemda' }}
+                                            {{ $post->status === 'published' ? 'Sudah tayang' : 'Menunggu publikasi' }}
                                         </span>
                                         @if ($post->published_at)
                                             <span class="text-xs text-muted">Dipublikasi {{ $post->published_at->translatedFormat('d M Y H:i') }}</span>
                                         @endif
                                     </div>
-                                    @unless ($isPemda)
-                                        <p class="text-xs text-muted mt-2 mb-0">Perubahan akan diajukan kembali ke Pemda sebelum tayang.</p>
+                                    @if (! $isPemda && ! $isPuskesmas)
+                                        <p class="text-xs text-muted mt-2 mb-0">Perubahan akan menunggu publikasi admin sebelum tayang.</p>
                                     @endunless
                                 </div>
                             @endif

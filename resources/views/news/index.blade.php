@@ -4,6 +4,7 @@
 
     $user = auth()->user();
     $isPemda = $user?->role === UserRole::Pemda;
+    $isPuskesmas = $user?->role === UserRole::Puskesmas;
 @endphp
 
 @extends('layouts.soft')
@@ -16,7 +17,7 @@
                     <div>
                         <h5 class="mb-1">{{ $isPemda ? 'Semua Berita / Testimoni' : 'Berita Saya' }}</h5>
                         <p class="text-sm text-muted mb-0">
-                            Kirim berita atau testimoni untuk blog. Berita akan dipublikasikan oleh Pemda setelah ditinjau.
+                            Kirim berita atau testimoni untuk blog. Puskesmas bisa menerbitkan langsung, dan Pemda tetap dapat meninjau semua konten.
                         </p>
                     </div>
                     <div class="d-flex flex-wrap gap-2">
@@ -70,13 +71,14 @@
                                 $isOwner = $post->user_id === ($user?->id);
                                 $canModify = $isPemda || $isOwner;
                                 $canEdit = $canModify && ($isPemda || $post->status !== 'published');
+                                $canPublish = $isPemda || ($isPuskesmas && $isOwner);
                             @endphp
                             <div class="border rounded-3 p-3 shadow-sm">
                                 <div class="d-flex flex-wrap justify-content-between gap-2">
                                     <div class="flex-grow-1">
                                         <div class="d-flex align-items-center gap-2 mb-1">
                                             <span class="badge {{ $post->status === 'published' ? 'bg-success' : 'bg-warning text-dark' }} text-uppercase">
-                                                {{ $post->status === 'published' ? 'Tayang' : 'Menunggu Pemda' }}
+                                                {{ $post->status === 'published' ? 'Tayang' : 'Menunggu publikasi' }}
                                             </span>
                                             <span class="text-xs text-muted">
                                                 Dibuat {{ $post->created_at->translatedFormat('d M Y H:i') }}
@@ -112,7 +114,7 @@
                                                 </form>
                                             </div>
                                         @endif
-                                        @if ($isPemda)
+                                        @if ($canPublish)
                                             @if ($post->status === 'pending')
                                                 <form action="{{ route('news.publish', $post) }}" method="POST" data-confirm="Publikasikan berita ke blog?" data-confirm-text="Ya, publikasikan">
                                                     @csrf
@@ -129,7 +131,7 @@
                                                 </form>
                                             @endif
                                         @else
-                                            <span class="text-xs text-muted text-end">Menunggu persetujuan Pemda untuk tayang.</span>
+                                            <span class="text-xs text-muted text-end">Menunggu publikasi oleh pengelola.</span>
                                         @endif
                                     </div>
                                 </div>
@@ -137,7 +139,7 @@
                         @empty
                             <div class="text-center text-muted py-4">
                                 <p class="mb-1">Belum ada berita.</p>
-                                <p class="text-sm mb-0">Kirim berita baru dan tunggu persetujuan Pemda untuk dipublikasikan.</p>
+                                <p class="text-sm mb-0">Kirim berita baru dan publikasikan saat siap tayang.</p>
                             </div>
                         @endforelse
                     </div>

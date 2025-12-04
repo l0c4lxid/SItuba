@@ -14,6 +14,7 @@
         ],
         UserRole::Puskesmas->value => [
             ['label' => 'Dashboard', 'url' => route('dashboard'), 'icon' => 'dashboard'],
+            ['label' => 'Kelurahan Binaan', 'url' => route('puskesmas.kelurahan'), 'icon' => 'folder'],
             ['label' => 'Data Kader', 'url' => route('puskesmas.kaders'), 'icon' => 'users'],
             ['label' => 'Data Pasien Skrining', 'url' => route('puskesmas.patients'), 'icon' => 'folder'],
             ['label' => 'Skrining', 'url' => route('puskesmas.screenings'), 'icon' => 'screening'],

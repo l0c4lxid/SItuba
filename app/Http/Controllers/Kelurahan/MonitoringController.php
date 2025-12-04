@@ -88,9 +88,10 @@ class MonitoringController extends Controller
         abort_if($kader->role !== UserRole::Kader, 404);
 
         $kelurahan = $request->user();
-        $kader->loadMissing('detail.supervisor.detail.supervisor');
-        $kelurahanOwner = optional(optional(optional($kader->detail)->supervisor)->detail)->supervisor;
-        abort_if(optional($kelurahanOwner)->id !== $kelurahan->id, 403);
+        $kader->loadMissing('detail.supervisor');
+        $kaderPuskesmasId = optional($kader->detail)->supervisor_id;
+        $kelurahanPuskesmasId = optional($kelurahan->detail)->supervisor_id;
+        abort_if(!$kaderPuskesmasId || $kaderPuskesmasId !== $kelurahanPuskesmasId, 403);
 
         $validated = $request->validate([
             'status' => ['required', 'in:active,inactive'],
@@ -133,7 +134,7 @@ class MonitoringController extends Controller
         } else {
             $patientsQuery = $filterPatients(User::query())
                 ->with([
-                    'detail.supervisor.detail.supervisor',
+                    'detail.supervisor.detail',
                     'screenings' => fn($query) => $query->latest()->limit(1),
                     'treatments' => fn($query) => $query->latest()->limit(1),
                 ])
@@ -164,7 +165,7 @@ class MonitoringController extends Controller
         abort_if($patient->role !== UserRole::Pasien, 404);
 
         $patient->loadMissing([
-            'detail.supervisor.detail.supervisor',
+            'detail.supervisor.detail',
             'screenings' => fn($query) => $query->latest()->limit(5),
             'treatments' => fn($query) => $query->latest()->limit(5),
             'familyMembers' => fn($query) => $query->latest(),
@@ -172,9 +173,9 @@ class MonitoringController extends Controller
 
         $kader = optional($patient->detail)->supervisor;
         $puskesmas = optional($kader?->detail)->supervisor;
-        $kelurahan = optional(optional($puskesmas?->detail)->supervisor);
+        $allowedPuskesmasId = optional($request->user()->detail)->supervisor_id;
 
-        abort_if(optional($kelurahan)->id !== $request->user()->id, 403);
+        abort_if(!$puskesmas || $allowedPuskesmasId !== optional($puskesmas)->id, 403);
 
         return view('kelurahan.patient-detail', [
             'patient' => $patient,

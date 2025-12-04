@@ -124,7 +124,7 @@ class NewsController extends Controller
 
         return redirect()
             ->route('news.index')
-            ->with('status', 'Berita berhasil dikirim. Menunggu publikasi Pemda.');
+            ->with('status', 'Berita berhasil dikirim. Publikasikan saat siap tayang.');
     }
 
     public function edit(Request $request, NewsPost $newsPost): View
@@ -191,7 +191,7 @@ class NewsController extends Controller
 
     public function publish(Request $request, NewsPost $newsPost): RedirectResponse
     {
-        abort_if($request->user()->role !== UserRole::Pemda, 403);
+        $this->assertCanPublish($request->user(), $newsPost);
 
         $newsPost->update([
             'status' => 'published',
@@ -206,7 +206,7 @@ class NewsController extends Controller
 
     public function unpublish(Request $request, NewsPost $newsPost): RedirectResponse
     {
-        abort_if($request->user()->role !== UserRole::Pemda, 403);
+        $this->assertCanPublish($request->user(), $newsPost);
 
         $newsPost->update([
             'status' => 'pending',
@@ -229,5 +229,13 @@ class NewsController extends Controller
         if ($newsPost->status === 'published' && ! $isPemda) {
             abort(403, 'Hanya Pemda yang dapat mengubah berita terpublikasi.');
         }
+    }
+
+    private function assertCanPublish(User $user, NewsPost $newsPost): void
+    {
+        $isPemda = $user->role === UserRole::Pemda;
+        $isOwnerPuskesmas = $user->role === UserRole::Puskesmas && $newsPost->user_id === $user->id;
+
+        abort_unless($isPemda || $isOwnerPuskesmas, 403);
     }
 }

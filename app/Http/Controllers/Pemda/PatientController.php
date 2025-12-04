@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pemda;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class PatientController extends Controller
@@ -12,6 +13,15 @@ class PatientController extends Controller
     public function index(Request $request)
     {
         abort_if($request->user()->role !== UserRole::Pemda, 403);
+
+        $kelurahanPuskesmasId = null;
+        if ($request->filled('kelurahan_id')) {
+            $kelurahan = User::query()
+                ->with('detail')
+                ->where('role', UserRole::Kelurahan->value)
+                ->find($request->input('kelurahan_id'));
+            $kelurahanPuskesmasId = optional($kelurahan?->detail)->supervisor_id;
+        }
 
         $puskesmasOptions = User::query()
             ->where('role', UserRole::Puskesmas->value)
@@ -51,7 +61,6 @@ class PatientController extends Controller
                 'detail',
                 'detail.supervisor',
                 'detail.supervisor.detail',
-                'detail.supervisor.detail.supervisor',
                 'screenings' => fn($query) => $query->latest()->limit(1),
                 'treatments' => fn($query) => $query->latest()->limit(1),
             ])
@@ -69,15 +78,14 @@ class PatientController extends Controller
             })
             ->when($request->filled('puskesmas_id'), function ($query) use ($request) {
                 $puskesmasId = $request->input('puskesmas_id');
-                $query->whereHas('detail.supervisor.detail.supervisor', function ($puskesmas) use ($puskesmasId) {
-                    $puskesmas->where('id', $puskesmasId);
-                });
+                $query->whereHas('detail.supervisor.detail', fn(Builder $detail) => $detail->where('supervisor_id', $puskesmasId));
             })
-            ->when($request->filled('kelurahan_id'), function ($query) use ($request) {
-                $kelurahanId = $request->input('kelurahan_id');
-                $query->whereHas('detail.supervisor.detail.supervisor.detail.supervisor', function ($kelurahan) use ($kelurahanId) {
-                    $kelurahan->where('id', $kelurahanId);
-                });
+            ->when($request->filled('kelurahan_id'), function ($query) use ($kelurahanPuskesmasId) {
+                if (!$kelurahanPuskesmasId) {
+                    $query->whereRaw('0 = 1');
+                    return;
+                }
+                $query->whereHas('detail.supervisor.detail', fn(Builder $detail) => $detail->where('supervisor_id', $kelurahanPuskesmasId));
             })
             ->when($request->filled('month'), function ($query) use ($request) {
                 $query->whereMonth('created_at', $request->input('month'));
@@ -127,7 +135,7 @@ class PatientController extends Controller
         abort_if($patient->role !== UserRole::Pasien, 404);
 
         $patient->loadMissing([
-            'detail.supervisor.detail.supervisor',
+            'detail.supervisor.detail',
             'screenings' => fn($query) => $query->latest()->limit(5),
             'treatments' => fn($query) => $query->latest()->limit(5),
             'familyMembers' => fn($query) => $query->latest(),

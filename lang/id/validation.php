@@ -29,6 +29,7 @@ return [
         'role' => 'peran',
         'kelurahan_name' => 'nama kelurahan',
         'kelurahan_address' => 'alamat kelurahan',
+        'kelurahan_puskesmas_id' => 'puskesmas pembina',
         'puskesmas_name' => 'nama puskesmas',
         'puskesmas_address' => 'alamat puskesmas',
         'puskesmas_kelurahan_id' => 'kelurahan mitra',

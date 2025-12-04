@@ -32,6 +32,7 @@ class RegisteredUserController extends Controller
             ->select('id', 'name')
             ->where('role', UserRole::Puskesmas->value)
             ->where('is_active', true)
+            ->with('detail')
             ->orderBy('name')
             ->get();
 
@@ -83,11 +84,11 @@ class RegisteredUserController extends Controller
             UserRole::Kelurahan => [
                 'kelurahan_name' => ['required', 'string', 'max:255'],
                 'kelurahan_address' => ['required', 'string', 'max:255'],
+                'kelurahan_puskesmas_id' => ['required', $activePuskesmasRule],
             ],
             UserRole::Puskesmas => [
                 'puskesmas_name' => ['required', 'string', 'max:255'],
                 'puskesmas_address' => ['required', 'string', 'max:255'],
-                'puskesmas_kelurahan_id' => ['required', $activeKelurahanRule],
             ],
             UserRole::Kader => [
                 'kader_puskesmas_id' => ['required', $activePuskesmasRule],
@@ -114,11 +115,11 @@ class RegisteredUserController extends Controller
             UserRole::Kelurahan => [
                 'organization' => $validated['kelurahan_name'],
                 'address' => $validated['kelurahan_address'],
+                'supervisor_id' => $validated['kelurahan_puskesmas_id'],
             ],
             UserRole::Puskesmas => [
                 'organization' => $validated['puskesmas_name'],
                 'address' => $validated['puskesmas_address'],
-                'supervisor_id' => $validated['puskesmas_kelurahan_id'],
             ],
             UserRole::Kader => [
                 'supervisor_id' => $validated['kader_puskesmas_id'],

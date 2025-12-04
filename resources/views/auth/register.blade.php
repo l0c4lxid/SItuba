@@ -84,6 +84,27 @@
                                     value="{{ old('kelurahan_name') }}">
                             </div>
                         </div>
+                        <div class="field-block">
+                            <div class="label-row">
+                                <label for="kelurahan_puskesmas_id">Puskesmas Pembina</label>
+                                <span class="helper">Pilih puskesmas induk</span>
+                            </div>
+                            @if (($puskesmasOptions ?? collect())->isEmpty())
+                                <div class="note" style="text-align:left;">Belum ada Puskesmas aktif. Hubungi admin.</div>
+                            @else
+                                <div class="input-wrap with-select">
+                                    <i class="fa fa-hospital input-icon"></i>
+                                    <select id="kelurahan_puskesmas_id" name="kelurahan_puskesmas_id" class="select">
+                                        <option value="">Pilih puskesmas</option>
+                                        @foreach ($puskesmasOptions as $puskesmas)
+                                            <option value="{{ $puskesmas->id }}"
+                                                @selected(old('kelurahan_puskesmas_id') == $puskesmas->id)>🏥 {{ optional($puskesmas->detail)->organization ?? $puskesmas->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
+                        </div>
                         <div class="field-block full">
                             <div class="label-row">
                                 <label for="kelurahan_address">Alamat Kelurahan</label>
@@ -111,27 +132,6 @@
                                 <input type="text" class="input" id="puskesmas_name" name="puskesmas_name"
                                     value="{{ old('puskesmas_name') }}">
                             </div>
-                        </div>
-                        <div class="field-block">
-                            <div class="label-row">
-                                <label for="puskesmas_kelurahan_id">Kelurahan Mitra</label>
-                                <span class="helper">Pilih kelurahan pembina</span>
-                            </div>
-                            @if (($kelurahanOptions ?? collect())->isEmpty())
-                                <div class="note" style="text-align:left;">Belum ada Kelurahan aktif. Hubungi admin.</div>
-                            @else
-                                <div class="input-wrap with-select">
-                                    <i class="fa fa-map-pin input-icon"></i>
-                                    <select id="puskesmas_kelurahan_id" name="puskesmas_kelurahan_id" class="select">
-                                        <option value="">Pilih kelurahan</option>
-                                        @foreach ($kelurahanOptions as $kelurahan)
-                                            <option value="{{ $kelurahan->id }}"
-                                                @selected(old('puskesmas_kelurahan_id') == $kelurahan->id)>🏘️ {{ $kelurahan->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            @endif
                         </div>
                         <div class="field-block full">
                             <div class="label-row">
@@ -164,7 +164,7 @@
                                         <option value="">Pilih puskesmas</option>
                                         @foreach ($puskesmasOptions as $puskesmas)
                                             <option value="{{ $puskesmas->id }}"
-                                                @selected(old('kader_puskesmas_id') == $puskesmas->id)>🏥 {{ $puskesmas->name }}
+                                                @selected(old('kader_puskesmas_id') == $puskesmas->id)>🏥 {{ optional($puskesmas->detail)->organization ?? $puskesmas->name }}
                                             </option>
                                         @endforeach
                                     </select>

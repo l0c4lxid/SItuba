@@ -12,6 +12,7 @@ use App\Http\Controllers\Pemda\ProfileController as PemdaProfileController;
 use App\Http\Controllers\Pemda\UserVerificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Puskesmas\KaderController as PuskesmasKaderController;
+use App\Http\Controllers\Puskesmas\KelurahanController as PuskesmasKelurahanController;
 use App\Http\Controllers\Puskesmas\PatientController as PuskesmasPatientController;
 use App\Http\Controllers\Puskesmas\ScreeningController as PuskesmasScreeningController;
 use App\Http\Controllers\Puskesmas\TreatmentController as PuskesmasTreatmentController;
@@ -119,6 +120,9 @@ Route::middleware('auth')->group(function () {
         ->name('puskesmas.treatment.update');
     Route::post('/puskesmas/berobat', [PuskesmasTreatmentController::class, 'store'])
         ->name('puskesmas.treatment.store');
+
+    Route::get('/puskesmas/kelurahan', [PuskesmasKelurahanController::class, 'index'])
+        ->name('puskesmas.kelurahan');
 
     Route::get('/puskesmas/kader', [PuskesmasKaderController::class, 'index'])
         ->name('puskesmas.kaders');
