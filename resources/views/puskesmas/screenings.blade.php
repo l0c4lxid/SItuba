@@ -13,12 +13,38 @@
                         <h5 class="mb-0">Monitoring Skrining Pasien</h5>
                         <p class="text-sm text-muted mb-0">Pantau status skrining pasien binaan kader mitra puskesmas.</p>
                     </div>
-                    <form method="GET" action="{{ route('puskesmas.screenings') }}" class="d-flex flex-wrap gap-2 align-items-center">
-                        <div class="input-group input-group-sm" style="min-width: 260px;">
-                            <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
-                            <input type="text" name="q" class="form-control" placeholder="Cari nama / nomor HP / alamat" value="{{ $search ?? '' }}">
+                    <form method="GET" action="{{ route('puskesmas.screenings') }}" class="d-flex flex-wrap gap-3 align-items-end w-100 justify-content-between">
+                        <div class="d-flex flex-wrap gap-3 align-items-end">
+                            <div class="d-flex flex-column">
+                                <label class="text-xxs text-muted mb-1">Tanggal mulai</label>
+                                <div class="input-group input-group-sm" style="min-width: 170px;">
+                                    <span class="input-group-text bg-white"><i class="fa fa-calendar text-muted"></i></span>
+                                    <input type="date" name="from" class="form-control" value="{{ $filters['from'] ?? '' }}">
+                                </div>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <label class="text-xxs text-muted mb-1">Tanggal akhir</label>
+                                <div class="input-group input-group-sm" style="min-width: 170px;">
+                                    <span class="input-group-text bg-white"><i class="fa fa-calendar text-muted"></i></span>
+                                    <input type="date" name="to" class="form-control" value="{{ $filters['to'] ?? '' }}">
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-end">
+                                <a href="{{ route('puskesmas.screenings.export.excel', request()->query()) }}" class="btn btn-sm btn-outline-primary btn-export">
+                                    <i class="fa fa-file-excel me-1"></i> Export Excel
+                                </a>
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-sm btn-outline-success">Cari</button>
+                        <div class="d-flex flex-wrap gap-2 align-items-end justify-content-end">
+                            <div class="d-flex flex-column">
+                                <label class="text-xxs text-muted mb-1">Cari nama / HP / alamat</label>
+                                <div class="input-group input-group-sm" style="min-width: 250px;">
+                                    <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                                    <input type="text" name="q" class="form-control" placeholder="Cari nama / HP / alamat" value="{{ $search ?? '' }}">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-outline-success">Terapkan</button>
+                        </div>
                     </form>
                 </div>
                 <div class="card-body">
@@ -26,7 +52,8 @@
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Pasien</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">#</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Pasien</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Kader</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status Skrining</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Terakhir Skrining</th>
@@ -34,6 +61,9 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $firstNumber = method_exists($patients, 'firstItem') ? $patients->firstItem() : 1;
+                                @endphp
                                 @forelse ($patients as $patient)
                                     @php
                                         $latestScreening = $patient->screenings->first();
@@ -59,9 +89,14 @@
                                         $waLink = $waNumber ? 'https://wa.me/'.$waNumber.'?text='.$waMessage : null;
                                     @endphp
                                     <tr>
+                                        <td>{{ $firstNumber ? $firstNumber + $loop->index : $loop->iteration }}</td>
                                         <td>
-                                            <h6 class="mb-0 text-sm">{{ $patient->name }}</h6>
-                                            <p class="text-xs text-muted mb-0">{{ $patient->detail->address ?? '-' }}</p>
+                                            <h6 class="mb-0 text-sm">
+                                                <a href="{{ route('puskesmas.screenings.show', $patient) }}" class="text-decoration-none">
+                                                    {{ $patient->name }}
+                                                </a>
+                                            </h6>
+                                            <p class="text-xs text-muted mb-0">NIK: {{ $patient->detail->nik ?? '-' }}</p>
                                         </td>
                                         <td>
                                             <p class="text-sm fw-semibold mb-0">{{ $patient->detail->supervisor->name ?? '-' }}</p>

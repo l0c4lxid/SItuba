@@ -5,7 +5,11 @@ namespace App\Http\Controllers\Puskesmas;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class KaderController extends Controller
 {
@@ -35,6 +39,51 @@ class KaderController extends Controller
             'kaders' => $kaders,
             'search' => $request->input('q', ''),
         ]);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        abort_if($request->user()->role !== UserRole::Puskesmas, 403);
+
+        $kaders = $this->kaderQuery($request)->get();
+
+        $pdf = Pdf::loadView('puskesmas.kaders-export', [
+            'kaders' => $kaders,
+            'title' => 'Daftar Kader Mitra',
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->download('kader-puskesmas.pdf');
+    }
+
+    public function exportExcel(Request $request)
+    {
+        abort_if($request->user()->role !== UserRole::Puskesmas, 403);
+
+        $kaders = $this->kaderQuery($request)->get();
+
+        $export = new class($kaders) implements FromCollection, WithHeadings {
+            public function __construct(private $kaders)
+            {
+            }
+
+            public function collection()
+            {
+                return $this->kaders->values()->map(function ($kader, $index) {
+                    return [
+                        'No' => $index + 1,
+                        'Nama' => $kader->name,
+                        'Nomor HP' => $kader->phone,
+                    ];
+                });
+            }
+
+            public function headings(): array
+            {
+                return ['No', 'Nama', 'Nomor HP'];
+            }
+        };
+
+        return Excel::download($export, 'kader-puskesmas.xlsx');
     }
 
     public function show(Request $request, User $kader)
@@ -68,5 +117,22 @@ class KaderController extends Controller
         $kader->save();
 
         return back()->with('status', 'Status kader diperbarui.');
+    }
+
+    protected function kaderQuery(Request $request)
+    {
+        return User::query()
+            ->with('detail')
+            ->where('role', UserRole::Kader->value)
+            ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $request->user()->id))
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $term = '%' . $request->input('q') . '%';
+                $query->where(function ($sub) use ($term) {
+                    $sub->where('name', 'like', $term)
+                        ->orWhere('phone', 'like', $term)
+                        ->orWhereHas('detail', fn($detail) => $detail->where('notes', 'like', $term));
+                });
+            })
+            ->latest();
     }
 }

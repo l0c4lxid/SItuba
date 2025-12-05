@@ -9,13 +9,23 @@
                         <h5 class="mb-0">Data Kader Mitra</h5>
                         <p class="text-sm text-muted mb-0">Daftar kader yang bekerja sama dengan puskesmas ini.</p>
                     </div>
-                    <form method="GET" action="{{ route('puskesmas.kaders') }}" class="d-flex flex-wrap gap-2 align-items-center">
-                        <div class="input-group input-group-sm" style="min-width: 250px;">
-                            <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
-                            <input type="text" name="q" class="form-control" placeholder="Cari nama / nomor HP / catatan" value="{{ $search ?? '' }}">
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <form method="GET" action="{{ route('puskesmas.kaders') }}" class="d-flex flex-wrap gap-2 align-items-center">
+                            <div class="input-group input-group-sm" style="min-width: 250px;">
+                                <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
+                                <input type="text" name="q" class="form-control" placeholder="Cari nama / nomor HP / catatan" value="{{ $search ?? '' }}">
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Cari</button>
+                        </form>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ route('puskesmas.kaders.export.pdf', request()->query()) }}" class="btn btn-sm btn-outline-secondary btn-export">
+                                <i class="fa fa-file-pdf me-1"></i> Export PDF
+                            </a>
+                            <a href="{{ route('puskesmas.kaders.export.excel', request()->query()) }}" class="btn btn-sm btn-outline-success btn-export">
+                                <i class="fa fa-file-excel me-1"></i> Export Excel
+                            </a>
                         </div>
-                        <button type="submit" class="btn btn-sm btn-outline-primary">Cari</button>
-                    </form>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">

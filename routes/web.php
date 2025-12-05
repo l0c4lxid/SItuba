@@ -111,6 +111,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/puskesmas/skrining', [PuskesmasScreeningController::class, 'index'])
         ->name('puskesmas.screenings');
+    Route::get('/puskesmas/skrining/{patient}', [PuskesmasScreeningController::class, 'show'])
+        ->name('puskesmas.screenings.show');
+    Route::get('/puskesmas/skrining-export/excel', [PuskesmasScreeningController::class, 'exportExcel'])
+        ->name('puskesmas.screenings.export.excel');
 
     Route::get('/puskesmas/berobat', [PuskesmasTreatmentController::class, 'index'])
         ->name('puskesmas.treatment');
@@ -120,9 +124,17 @@ Route::middleware('auth')->group(function () {
         ->name('puskesmas.treatment.update');
     Route::post('/puskesmas/berobat', [PuskesmasTreatmentController::class, 'store'])
         ->name('puskesmas.treatment.store');
+    Route::get('/puskesmas/berobat-export/excel', [PuskesmasTreatmentController::class, 'exportExcel'])
+        ->name('puskesmas.treatment.export.excel');
 
     Route::get('/puskesmas/kelurahan', [PuskesmasKelurahanController::class, 'index'])
         ->name('puskesmas.kelurahan');
+    Route::get('/puskesmas/kelurahan/{kelurahan}', [PuskesmasKelurahanController::class, 'show'])
+        ->name('puskesmas.kelurahan.show');
+    Route::delete('/puskesmas/kelurahan/{kelurahan}', [PuskesmasKelurahanController::class, 'destroy'])
+        ->name('puskesmas.kelurahan.destroy');
+    Route::post('/puskesmas/kelurahan/{kelurahan}/approve', [PuskesmasKelurahanController::class, 'approveRequest'])
+        ->name('puskesmas.kelurahan.approve');
 
     Route::get('/puskesmas/kader', [PuskesmasKaderController::class, 'index'])
         ->name('puskesmas.kaders');
@@ -130,9 +142,15 @@ Route::middleware('auth')->group(function () {
         ->name('puskesmas.kaders.show');
     Route::post('/puskesmas/kader/{kader}/status', [PuskesmasKaderController::class, 'updateStatus'])
         ->name('puskesmas.kaders.status');
+    Route::get('/puskesmas/kader-export/pdf', [PuskesmasKaderController::class, 'exportPdf'])
+        ->name('puskesmas.kaders.export.pdf');
+    Route::get('/puskesmas/kader-export/excel', [PuskesmasKaderController::class, 'exportExcel'])
+        ->name('puskesmas.kaders.export.excel');
 
     Route::get('/kelurahan/puskesmas', [KelurahanMonitoringController::class, 'puskesmas'])
         ->name('kelurahan.puskesmas');
+    Route::post('/kelurahan/puskesmas/{puskesmas}/request', [KelurahanMonitoringController::class, 'requestPuskesmas'])
+        ->name('kelurahan.puskesmas.request');
     Route::get('/kelurahan/kader', [KelurahanMonitoringController::class, 'kaders'])
         ->name('kelurahan.kaders');
     Route::post('/kelurahan/kader/{kader}/status', [KelurahanMonitoringController::class, 'updateKaderStatus'])

@@ -9,6 +9,9 @@ use App\Models\User;
 use App\Support\FamilyTreatment;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class TreatmentController extends Controller
 {
@@ -182,5 +185,83 @@ class TreatmentController extends Controller
         );
 
         return back()->with('status', 'Pasien ditambahkan ke daftar pengobatan.');
+    }
+
+    public function exportExcel(Request $request)
+    {
+        abort_if($request->user()->role !== UserRole::Puskesmas, 403);
+
+        $questionLabels = [
+            'batuk_kronis' => 'Batuk Kronis',
+            'dahak_darah' => 'Dahak Darah',
+            'berat_badan' => 'Berat Badan',
+            'demam_malam' => 'Demam Malam',
+        ];
+
+        $kaderIds = User::query()
+            ->where('role', UserRole::Kader->value)
+            ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $request->user()->id))
+            ->pluck('id');
+
+        $treatments = $kaderIds->isEmpty()
+            ? collect()
+            : PatientTreatment::query()
+                ->with(['patient.detail.supervisor', 'patient.screenings' => fn($q) => $q->latest()->limit(1)])
+                ->whereHas('patient.detail', fn($detail) => $detail->whereIn('supervisor_id', $kaderIds))
+                ->orderByDesc('created_at')
+                ->get();
+
+        $export = new class($treatments, $questionLabels) implements FromCollection, WithHeadings {
+            public function __construct(private $treatments, private $questionLabels)
+            {
+            }
+
+            public function collection()
+            {
+                return $this->treatments->values()->map(function ($treatment, $index) {
+                    $patient = $treatment->patient;
+                    $detail = optional($patient)->detail;
+                    $kader = optional($detail)->supervisor;
+
+                    $latestScreening = $patient?->screenings->first();
+                    $answers = $latestScreening?->answers ?? [];
+                    $answerStrings = collect($answers)->map(function ($value, $key) {
+                        $label = is_string($key) ? ucwords(str_replace('_', ' ', $key)) : 'Pertanyaan '.($key + 1);
+                        $display = $value === 'ya' ? 'Ya' : ($value === 'tidak' ? 'Tidak' : (string) $value);
+                        return "{$label}: {$display}";
+                    })->implode('; ');
+
+                    $row = [
+                        'No' => $index + 1,
+                        'Nama' => $patient?->name ?? '-',
+                        'NIK' => $detail?->nik ?? '-',
+                        'HP' => $patient?->phone ?? '-',
+                        'Status Pengobatan' => ucfirst(str_replace('_', ' ', $treatment->status)),
+                        'Catatan' => $treatment->notes ?? '-',
+                        'Kader' => $kader?->name ?? '-',
+                        'Alamat' => $detail?->address ?? '-',
+                        'Jadwal Kontrol' => optional($treatment->next_follow_up_at)?->format('d/m/Y') ?? '-',
+                        'Hasil Skrining' => $answerStrings ?: '-',
+                    ];
+
+                    foreach ($this->questionLabels as $key => $label) {
+                        $value = $answers[$key] ?? null;
+                        $row[$label] = $value === 'ya' ? 'Ya' : ($value === 'tidak' ? 'Tidak' : ($value ?? '-'));
+                    }
+
+                    return $row;
+                });
+            }
+
+            public function headings(): array
+            {
+                return array_merge(
+                    ['No', 'Nama', 'NIK', 'HP', 'Status Pengobatan', 'Catatan', 'Kader', 'Alamat', 'Jadwal Kontrol', 'Hasil Skrining'],
+                    array_values($this->questionLabels),
+                );
+            }
+        };
+
+        return Excel::download($export, 'pengobatan-pasien.xlsx');
     }
 }

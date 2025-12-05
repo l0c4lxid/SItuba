@@ -17,32 +17,41 @@ class MonitoringController extends Controller
         $kelurahan = $request->user()->loadMissing('detail');
         $puskesmasId = optional($kelurahan->detail)->supervisor_id;
 
-        $puskesmasList = $puskesmasId
-            ? User::query()
-                ->with('detail')
-                ->where('role', UserRole::Puskesmas->value)
-                ->where('id', $puskesmasId)
-                ->when($request->filled('q'), function ($query) use ($request) {
-                    $term = '%' . $request->input('q') . '%';
-                    $query->where(function ($sub) use ($term) {
-                        $sub->where('name', 'like', $term)
-                            ->orWhereHas('detail', function ($detail) use ($term) {
-                                $detail->where('address', 'like', $term)
-                                    ->orWhere('organization', 'like', $term);
-                            });
-                    });
-                })
-                ->paginate(10)
-                ->withQueryString()
-            : new LengthAwarePaginator([], 0, 10, 1, [
-                'path' => $request->url(),
-                'query' => $request->query(),
-            ]);
+        $puskesmasList = User::query()
+            ->with('detail')
+            ->where('role', UserRole::Puskesmas->value)
+            ->when($puskesmasId, fn($q) => $q->where('id', $puskesmasId))
+            ->when(!$puskesmasId, fn($q) => $q->orderBy('name'))
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $term = '%' . $request->input('q') . '%';
+                $query->where(function ($sub) use ($term) {
+                    $sub->where('name', 'like', $term)
+                        ->orWhereHas('detail', function ($detail) use ($term) {
+                            $detail->where('address', 'like', $term)
+                                ->orWhere('organization', 'like', $term);
+                        });
+                });
+            })
+            ->paginate(10)
+            ->withQueryString();
 
         return view('kelurahan.puskesmas', [
             'puskesmasList' => $puskesmasList,
             'search' => $request->input('q', ''),
+            'currentPuskesmasId' => $puskesmasId,
         ]);
+    }
+
+    public function requestPuskesmas(Request $request, User $puskesmas)
+    {
+        abort_if($request->user()->role !== UserRole::Kelurahan, 403);
+        abort_if($puskesmas->role !== UserRole::Puskesmas, 404);
+
+        $kelurahan = $request->user()->loadMissing('detail');
+
+        $kelurahan->detail?->update(['supervisor_id' => $puskesmas->id]);
+
+        return back()->with('status', 'Permintaan puskesmas induk dikirim. Menunggu persetujuan.');
     }
 
     public function kaders(Request $request)

@@ -10,11 +10,11 @@
                         <p class="text-sm text-muted mb-0">Daftar kelurahan yang terhubung ke puskesmas ini.</p>
                     </div>
                     <form method="GET" action="{{ route('puskesmas.kelurahan') }}" class="d-flex flex-wrap gap-2 align-items-center">
-                        <div class="input-group input-group-sm" style="min-width: 250px;">
+                        <div class="input-group input-group-sm" style="min-width: 220px;">
                             <span class="input-group-text bg-white"><i class="fa fa-search text-muted"></i></span>
                             <input type="text" name="q" class="form-control" placeholder="Cari nama / alamat" value="{{ $search ?? '' }}">
                         </div>
-                        <button type="submit" class="btn btn-sm btn-outline-primary">Cari</button>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Terapkan</button>
                     </form>
                 </div>
                 <div class="card-body">
@@ -48,6 +48,7 @@
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Alamat</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Ditambahkan</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 text-center">Kelola</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -58,7 +59,11 @@
                                     <tr>
                                         <td>{{ $firstNumber ? $firstNumber + $loop->index : $loop->iteration }}</td>
                                         <td>
-                                            <h6 class="mb-0 text-sm">{{ $row->name }}</h6>
+                                            <h6 class="mb-0 text-sm">
+                                                <a href="{{ route('puskesmas.kelurahan.show', $row) }}" class="text-decoration-none">
+                                                    {{ $row->name }}
+                                                </a>
+                                            </h6>
                                             <p class="text-xs text-muted mb-0">{{ optional($row->detail)->organization ?? '-' }}</p>
                                         </td>
                                         <td>
@@ -74,10 +79,21 @@
                                         <td>
                                             <span class="text-xs text-muted">{{ $row->created_at?->format('d M Y') }}</span>
                                         </td>
+                                        <td class="text-center">
+                                            <form method="POST" action="{{ route('puskesmas.kelurahan.destroy', $row) }}" class="d-inline" data-confirm="Lepas kemitraan kelurahan ini?" data-confirm-text="Ya, lepas">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-warning">Lepas</button>
+                                            </form>
+                                            <form method="POST" action="{{ route('puskesmas.kelurahan.approve', $row) }}" class="d-inline ms-1">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-success">Setujui</button>
+                                            </form>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center py-4 text-muted">Belum ada kelurahan terhubung.</td>
+                                        <td colspan="6" class="text-center py-4 text-muted">Belum ada kelurahan terhubung.</td>
                                     </tr>
                                 @endforelse
                             </tbody>

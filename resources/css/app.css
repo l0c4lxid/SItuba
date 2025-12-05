@@ -200,6 +200,16 @@ body {
     border-radius: 12px;
 }
 
+.btn-export {
+    font-weight: 800;
+}
+
+/* Bolden table text for better readability */
+.table th,
+.table td {
+    font-weight: 600;
+}
+
 .news-filter .input-group.news-filter__control {
     flex: 1 1 320px;
 }

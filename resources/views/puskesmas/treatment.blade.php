@@ -4,36 +4,41 @@
     <div class="row">
         <div class="col-12">
             <div class="card shadow-sm border-0">
-                <div class="card-header d-flex flex-wrap justify-content-between alignments-center gap-3">
-                    <div>
-                        <h5 class="mb-0">Pengelolaan Pengobatan Pasien</h5>
-                        <p class="text-sm text-muted mb-0">Pantau progres pasien yang sedang ditindaklanjuti pengobatan TBC.</p>
-                    </div>
-                    <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 ms-lg-auto w-100 w-lg-auto">
-                        <ul class="nav nav-pills flex-wrap">
-                            @foreach ($statuses as $value => $label)
-                                <li class="nav-item">
-                                    <a class="nav-link {{ $activeStatus === $value ? 'active' : '' }}" href="{{ route('puskesmas.treatment', ['status' => $value, 'q' => $search]) }}">
-                                        {{ $label }}
-                                        <span class="badge bg-white text-dark ms-1">{{ $counts[$value] ?? 0 }}</span>
-                                    </a>
-                                </li>
-                            @endforeach
-                        </ul>
-                        <form method="GET" action="{{ route('puskesmas.treatment') }}" class="d-flex gap-2">
-                            @if ($activeStatus)
-                                <input type="hidden" name="status" value="{{ $activeStatus }}">
-                            @endif
-                            <div class="input-group input-group-sm">
-                                <input type="text" class="form-control" name="q" placeholder="Cari nama/telepon" value="{{ $search }}">
-                                <button class="btn btn-outline-secondary" type="submit"><i class="fa fa-search"></i></button>
+                    <div class="card-header d-flex flex-wrap justify-content-between alignments-center gap-3">
+                        <div>
+                            <h5 class="mb-0">Pengelolaan Pengobatan Pasien</h5>
+                            <p class="text-sm text-muted mb-0">Pantau progres pasien yang sedang ditindaklanjuti pengobatan TBC.</p>
+                        </div>
+                        <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 ms-lg-auto w-100 w-lg-auto">
+                            <ul class="nav nav-pills flex-wrap">
+                                @foreach ($statuses as $value => $label)
+                                    <li class="nav-item">
+                                        <a class="nav-link {{ $activeStatus === $value ? 'active' : '' }}" href="{{ route('puskesmas.treatment', ['status' => $value, 'q' => $search]) }}">
+                                            {{ $label }}
+                                            <span class="badge bg-white text-dark ms-1">{{ $counts[$value] ?? 0 }}</span>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <form method="GET" action="{{ route('puskesmas.treatment') }}" class="d-flex gap-2">
+                                    @if ($activeStatus)
+                                        <input type="hidden" name="status" value="{{ $activeStatus }}">
+                                    @endif
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control" name="q" placeholder="Cari nama/telepon" value="{{ $search }}">
+                                        <button class="btn btn-outline-secondary" type="submit"><i class="fa fa-search"></i></button>
+                                    </div>
+                                    @if ($search !== '')
+                                        <a href="{{ route('puskesmas.treatment', array_filter(['status' => $activeStatus])) }}" class="btn btn-sm btn-light">Reset</a>
+                                    @endif
+                                </form>
+                                <a href="{{ route('puskesmas.treatment.export.excel', request()->query()) }}" class="btn btn-sm btn-outline-success btn-export">
+                                    <i class="fa fa-file-excel me-1"></i> Export Excel
+                                </a>
                             </div>
-                            @if ($search !== '')
-                                <a href="{{ route('puskesmas.treatment', array_filter(['status' => $activeStatus])) }}" class="btn btn-sm btn-light">Reset</a>
-                            @endif
-                        </form>
+                        </div>
                     </div>
-                </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table align-items-center mb-0">

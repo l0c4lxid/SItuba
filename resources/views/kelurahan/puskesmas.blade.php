@@ -7,7 +7,7 @@
                 <div class="card-header d-flex flex-wrap gap-3 justify-content-between align-items-center">
                     <div>
                         <h5 class="mb-0">Puskesmas Mitra</h5>
-                        <p class="text-sm text-muted mb-0">Daftar puskesmas yang bekerja sama dengan kelurahan ini.</p>
+                        <p class="text-sm text-muted mb-0">Pilih puskesmas induk jika belum terhubung. Hubungan aktif ditandai pada kartu.</p>
                     </div>
                     <form method="GET" action="{{ route('kelurahan.puskesmas') }}" class="d-flex gap-2">
                         <div class="input-group input-group-sm">
@@ -27,7 +27,7 @@
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Kontak</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Alamat</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Didaftarkan</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -48,14 +48,21 @@
                                             <p class="text-xs mb-0">{{ $puskesmas->detail->address ?? '-' }}</p>
                                         </td>
                                         <td>
-                                            @if ($puskesmas->is_active)
-                                                <span class="badge bg-gradient-success text-white">Aktif</span>
+                                            @if ($currentPuskesmasId === $puskesmas->id)
+                                                <span class="badge bg-gradient-success text-white">Mitra aktif</span>
                                             @else
-                                                <span class="badge bg-gradient-warning text-dark">Belum aktif</span>
+                                                <span class="badge bg-gradient-secondary">Belum terhubung</span>
                                             @endif
                                         </td>
                                         <td class="text-center">
-                                            <span class="text-xs text-muted">{{ $puskesmas->created_at->format('d M Y') }}</span>
+                                            @if ($currentPuskesmasId === $puskesmas->id)
+                                                <span class="text-xs text-muted">Sudah terhubung</span>
+                                            @else
+                                                <form method="POST" action="{{ route('kelurahan.puskesmas.request', $puskesmas) }}">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary">Ajukan sebagai induk</button>
+                                                </form>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty

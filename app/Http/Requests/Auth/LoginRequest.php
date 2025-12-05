@@ -4,6 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -41,7 +42,43 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('phone', 'password'), $this->boolean('remember'))) {
+        $credentials = $this->only('phone', 'password');
+
+        // Normalize phone input to digits-only and local prefix (no name-based login).
+        $normalizedPhone = preg_replace('/\D+/', '', $credentials['phone']);
+        if (str_starts_with($normalizedPhone, '62')) {
+            $normalizedPhone = '0'.substr($normalizedPhone, 2);
+        }
+
+        $attempts = [
+            ['phone' => $credentials['phone'], 'password' => $credentials['password']],
+            ['phone' => $normalizedPhone, 'password' => $credentials['password']],
+        ];
+
+        $authenticated = false;
+        foreach ($attempts as $attempt) {
+            if ($attempt['phone'] && Auth::attempt($attempt, $this->boolean('remember'))) {
+                $authenticated = true;
+                break;
+            }
+        }
+
+        if (! $authenticated) {
+            // Fallback: allow login using initial_password stored on the user detail.
+            $user = User::query()
+                ->whereIn('phone', array_filter([$credentials['phone'], $normalizedPhone]))
+                ->first();
+
+            if ($user && $user->detail && $user->detail->initial_password === $credentials['password']) {
+                // Upgrade their stored password to the entered one for future logins.
+                $user->password = $credentials['password'];
+                $user->save();
+
+                Auth::login($user, $this->boolean('remember'));
+                RateLimiter::clear($this->throttleKey());
+                return;
+            }
+
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([

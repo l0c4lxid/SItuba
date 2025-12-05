@@ -17,6 +17,7 @@ class PatientController extends Controller
         abort_if($request->user()->role !== UserRole::Puskesmas, 403);
 
         $perPage = 10;
+
         $kaderIds = User::query()
             ->where('role', UserRole::Kader->value)
             ->whereHas('detail', fn($detail) => $detail->where('supervisor_id', $request->user()->id))
@@ -29,7 +30,11 @@ class PatientController extends Controller
                 'query' => $request->query(),
             ])
             : User::query()
-                ->with(['detail', 'detail.supervisor'])
+                ->with([
+                    'detail',
+                    'detail.supervisor',
+                    'screenings' => fn($query) => $query->latest()->limit(1),
+                ])
                 ->where('role', UserRole::Pasien->value)
                 ->whereHas('detail', fn($detail) => $detail->whereIn('supervisor_id', $kaderIds))
                 ->when($request->filled('q'), function ($query) use ($request) {
