@@ -85,7 +85,8 @@ jobs:
           local-dir: ./deploy-core/
           server-dir: ./situba/
           state-name: .ftp-deploy-core-state.json
-          timeout: 120000
+          timeout: 300000
+          passive: true
           exclude: |
             **/.git*
             **/.github/**
@@ -115,7 +116,8 @@ jobs:
           local-dir: ./deploy-public/
           server-dir: ./public_html/
           state-name: .ftp-deploy-public-state.json
-          timeout: 120000
+          timeout: 300000
+          passive: true
           exclude: |
             **/.git*
             **/.github/**
