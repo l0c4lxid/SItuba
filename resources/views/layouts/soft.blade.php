@@ -191,6 +191,9 @@
                     const confirmText = form.dataset.confirmText ?? 'Ya';
                     const cancelText = form.dataset.cancelText ?? 'Batal';
 
+                    // Tutup sidebar lebih dulu agar dialog tidak tertutup di mode mobile
+                    window.softSidebarClose?.();
+
                     Swal.fire({
                         icon: 'warning',
                         title: 'Konfirmasi',

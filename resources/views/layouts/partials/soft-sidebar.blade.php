@@ -104,6 +104,13 @@
             }
         };
 
+        // Expose a close helper for global scripts (e.g., logout confirmations)
+        window.softSidebarClose = () => {
+            if (sidebar?.classList.contains('open')) {
+                toggleSidebar();
+            }
+        };
+
         const tooltipNodes = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipNodes.forEach(node => {
             if (window.bootstrap?.Tooltip) {
