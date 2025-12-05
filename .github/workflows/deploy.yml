@@ -65,7 +65,6 @@ jobs:
             --exclude '.cpanel*' \
             --exclude 'resources/assets' \
             --exclude 'resources/js' \
-            --exclude 'resources/css' \
             --exclude 'resources/sass' \
             --exclude 'resources/less'
 
