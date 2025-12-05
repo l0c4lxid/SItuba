@@ -510,6 +510,11 @@ body {
     box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
 }
 
+/* Pastikan dialog konfirmasi tampil di atas sidebar pada mode mobile */
+.swal2-container {
+    z-index: 2000;
+}
+
 .soft-sidebar {
     background: linear-gradient(140deg, #ffffff 0%, #eef2ff 60%, #e0f7f4 100%);
     border-radius: 30px;
