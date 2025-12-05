@@ -59,7 +59,10 @@ jobs:
             --exclude 'storage/framework/cache' \
             --exclude 'storage/framework/sessions' \
             --exclude 'storage/framework/views' \
-            --exclude 'bootstrap/cache/*.php' \
+            --exclude 'bootstrap/cache/config.php' \
+            --exclude 'bootstrap/cache/routes-*.php' \
+            --exclude 'bootstrap/cache/events-*.php' \
+            --exclude 'bootstrap/cache/services.php' \
             --exclude '.git' \
             --exclude '.github' \
             --exclude '.cpanel*' \
