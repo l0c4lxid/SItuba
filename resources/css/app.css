@@ -544,8 +544,8 @@ body.sidebar-open {
     height: 100vh;
 }
 
-    /* Treat tablets (>=768px) as desktop so sidebar stays visible */
-    @media (max-width: 767.98px) {
+    /* Mobile & tablet off-canvas */
+    @media (max-width: 1199.98px) {
         #sidenav-main {
             transform: translateX(-110%);
             position: fixed;

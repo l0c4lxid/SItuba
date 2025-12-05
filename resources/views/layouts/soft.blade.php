@@ -129,12 +129,12 @@
                             <div class="soft-topbar__heading">
                                 <div>
                                     <h1 class="soft-page-title mb-0">{{ $navTitle }}</h1>
-                                    <p class="soft-topbar__subtitle mb-0">Data skrining dan tindak lanjut TBC yang terintegrasi di tiap level layanan.</p>
+                    <p class="soft-topbar__subtitle mb-0">Data skrining dan tindak lanjut TBC yang terintegrasi di tiap level layanan.</p>
                                 </div>
                             </div>
                     </div>
                     <div class="soft-topbar__actions">
-                        <button id="iconNavbarSidenav" class="btn btn-outline-primary btn-icon d-lg-none" type="button" aria-label="Navigasi">
+                        <button id="iconNavbarSidenav" class="btn btn-outline-primary btn-icon d-xl-none" type="button" aria-label="Navigasi">
                             <i class="ri-menu-3-line"></i>
                         </button>
                         <div class="dropdown soft-profile-dropdown ms-auto">
